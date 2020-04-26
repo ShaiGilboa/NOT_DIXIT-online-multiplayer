@@ -1,6 +1,6 @@
 'use strict';
 
-const deck = require('.data/deck')
+let deck = require('./data/deck')
 
 //---------------------------
 // firebase stuff
@@ -29,6 +29,48 @@ const deck = require('.data/deck')
 //utils
 //---------------------------
 
+const newId = () => {
+  return Date.now()
+}
+
+const getNewDeck = () => {
+  const newDeck = deck.map(card=>{
+    return {
+      ...card,
+      isAvailable: true,
+    }
+  }) // this will be a function call to get a deck from the server
+  return newDeck;
+}
+
+const randInRange = (min, max) => {
+  return Math.floor(Math.random() * (max - min) + min);
+}
+
+const randFromArr = (amount, arr) => {
+  if (amount > arr.length) return false;
+  if (amount === arr.length) return arr;
+  const chosenObjects = [];
+  const chosenIndexes = [];
+  while (chosenObjects.length < amount) {
+    let randomIndex = randInRange(0, arr.length);
+    if(!chosenIndexes.includes(randomIndex)) {
+      chosenIndexes.push(randomIndex);
+      chosenObjects.push(arr[randomIndex])
+    }
+  }
+  return chosenObjects;
+}
+
+const getHandFromDeck = (deck) => {
+  const options = deck.filter(card=>card.isAvailable)
+  const hand = randFromArr(7, options);
+  hand.forEach(cardInHand => {
+    cardInHand.isAvailable = false
+  })
+  return hand;
+}
+
 //---------------------------
 //endpoints handlers
 //---------------------------
@@ -55,7 +97,21 @@ const signOutHandler = async (req, res) => {
 // get:
 // returns: 
 const startGameHandler = async (req, res) => {
-
+  const newGameDeck = getNewDeck() //here there will be some sort of function call to db to get the deck
+  const id = newId();
+  const hand = getHandFromDeck(newGameDeck)// this will have to check that we are getting 'available' cards
+  console.log('id',id)
+  console.log('newGameDeck',newGameDeck)
+  console.log('hand',hand)
+  try {
+    if (newGameDeck.length) res.status(200).json({
+      status: 200,
+      hand,
+      id
+    })
+  } catch (err) {
+    console.log('err',err)
+  }
 }
 
 // -- calculate score based on guesses
@@ -84,10 +140,24 @@ const submitGuessPlayersCard = async (req, res) => {
 
 
 // -- submit a card to the table, under player's title
-// post: req.body{the card chosen, title, guesserId}
+// post: req.body{the id of card chosen, title, guesserId}
 // returns: 
 const submitCardUnderTitle = async (req, res) => {
+  const { 
+    id,
+    title,
+  } = req.body
+  console.log('id',id)
+  console.log('title',title)
+  try {
+    
+    res.status(200).json({
+      status: 200,
 
+    })
+  } catch (err) {
+    console.log('err',err)
+  }
 }
 
 module.exports = {

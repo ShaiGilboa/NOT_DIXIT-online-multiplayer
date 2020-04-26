@@ -1,0 +1,15 @@
+{
+  "name": "dixt",
+  "version": "1",
+  "description": "none",
+  "main": "index.js",
+  "author": "Shai Gilboa <shizel@gmail.com>",
+  "license": "MIT",
+  "scripts": {
+    "start": "node server/index.js",
+    "dev": "nodemon index.js"
+  },
+  "dependencies": {
+    "nodemon": "^2.0.3"
+  }
+}
