@@ -65,7 +65,7 @@ const zoom2 = keyframes`
   /* from {
     transform: scale(1);
   }
-  to {
+  to {  
     transform: scale(2);
   } */
 `;
