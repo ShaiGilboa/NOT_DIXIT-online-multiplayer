@@ -3,9 +3,9 @@ import ReactDOM from 'react-dom';
 import { Provider } from 'react-redux';
 
 import configureStore from './Redux/store';
+import AuthProvider from './components/AuthContext';
 
 
-// import AppProvider from './components/AppContext';
 import App from './components/App';
 
 const store = configureStore();
@@ -13,7 +13,9 @@ const store = configureStore();
 ReactDOM.render(
   <React.StrictMode>
     <Provider store={store}>
-      <App />
+      <AuthProvider>
+        <App />
+      </AuthProvider>
     </Provider>
   </React.StrictMode>,
   document.getElementById('root')

@@ -11,12 +11,18 @@ import {
 import styled from 'styled-components';
 
 import GlobalStyles from '../GlobalStyles';
+// import { AuthContext } from '../AuthContext';
 
 import Navbar from '../Navbar';
 import Homepage from '../../pages/Homepage';
 import Game from '../../pages/Game';
 
 const App = () => {
+  // const {
+  //   appUser,
+  //   signInWithGoogle,
+  //   handleSignOut,
+  //   } = useContext(AuthContext);
   
   return (
     <Router>

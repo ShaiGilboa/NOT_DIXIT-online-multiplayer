@@ -18,6 +18,7 @@ const ChosenCardModal = ({
   setChosenCardModalFlag,
   }) => {
   const dispatch = useDispatch();
+  const gameId = useSelector(state=>state.gameData.gameId)
   const [title, setTitle] = useState('')
 
   const valueChange = (event) => {
@@ -39,6 +40,7 @@ const ChosenCardModal = ({
       const body = {
         id: chosenCard.id,
         title,
+        gameId,
       }
       fetch('/place-card', {
         method: "POST",

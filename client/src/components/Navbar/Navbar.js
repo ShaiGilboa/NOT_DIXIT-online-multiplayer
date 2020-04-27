@@ -1,21 +1,63 @@
-import React from 'react';
+import React, {
+  useContext,
+  useEffect,
+} from 'react';
 import styled from 'styled-components';
 
 import {
   useSelector,
 } from 'react-redux';
 
+import { AuthContext } from '../../components/AuthContext/AuthContext';
+
+
 const Navbar = () => {
 
-  const titledCard = useSelector(state=>state.gameData.titledCard)
+  const {
+    signInWithGoogle,
+    handleSignOut,
+  } = useContext(AuthContext);
+
+  const gameData = useSelector(state=>state.gameData)
+  const currentUserInfo = useSelector(state=>state.currentUserInfo)
+  // let initials;
+
+  const getInitial = () =>{
+    const name = currentUserInfo.info.displayName
+    const nameArr = name.split(' ');
+    const initials = nameArr.map(string=>string.charAt(0).toUpperCase()).join(' ')
+    return initials
+  }
+
+  // useEffect(()=>{
+  //   if(currentUserInfo.info.displayName){
+  //     initials
+  //   }
+  // },[currentUserInfo])
 
   return (
     <Wrapper>
       <Title>Dixit!</Title>
-      {titledCard.title ? <div>your Title: {titledCard.title}</div>: null}
+      {gameData.titledCard.title ? <div>your Title: {gameData.titledCard.title}</div>: null}
+      {gameData.gameId ? <div>your game id: {gameData.gameId}</div>: null}
+      
       <UserInfoBox>
-        <button>Sign In / Out</button>
-        <div>user logo</div>
+        {currentUserInfo.email 
+          ? (<>
+            <button
+              onClick={()=>handleSignOut()}
+            >Sign Out</button>
+            <div>user logo</div>
+            {currentUserInfo.info.photoURL 
+              ? <UserAvatar src={currentUserInfo.info.photoURL} />
+              : <Initials><p>{getInitial()}</p></Initials>}
+          </>)
+          : (<>
+            <button
+              onClick={()=>signInWithGoogle()}
+            >Sign In</button>
+            <div>user logo</div>
+          </>)}
       </UserInfoBox>
     </Wrapper>
     );
@@ -47,4 +89,23 @@ const UserInfoBox = styled.div`
   width: 40%;
   display: flex;
   justify-content: space-around;
+`;
+
+const Initials = styled.div`
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background-color:pink;
+  color: white;
+  text-align: center;
+  /* align-items:center; */
+  font-size: large;
+  font-weight: bold;
+`;
+
+const UserAvatar = styled.img`
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  object-fit: cover;
 `;

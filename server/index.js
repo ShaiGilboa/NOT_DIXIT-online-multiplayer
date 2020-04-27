@@ -9,11 +9,12 @@ const morgan = require('morgan');
 const {
   signInHandler,
   signOutHandler,
-  startGameHandler,
+  startNewGameHandler,
   roundEndHandler,
   roundStartHandler,
   submitGuessPlayersCard,
   submitCardUnderTitle,
+  joinExistingGameHandler,
 } = require('./handlers');
 
 const PORT = process.env.PORT || 4000;
@@ -40,7 +41,8 @@ express()
   .post('/sign-in', signInHandler)
   .put('/sign-out', signOutHandler)
   // .post('/start-game', startGameHandler)
-  .get('/start-game', startGameHandler)
+  .post('/start-new-game', startNewGameHandler)
+  .post('/join-existing-game', joinExistingGameHandler)
   .post('/round-end', roundEndHandler)
   .post('/round-start', roundStartHandler)
   .post('/guess-players-card', submitGuessPlayersCard)

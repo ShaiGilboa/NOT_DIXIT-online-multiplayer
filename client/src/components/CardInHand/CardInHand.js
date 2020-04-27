@@ -20,6 +20,7 @@ const CardInHand = ({
   setChosenCardModalFlag,
   setChosenCard,
   id,
+  isMyTurn,
   }) => {
 
   const dispatch = useDispatch();
@@ -39,7 +40,7 @@ const CardInHand = ({
       index={index}
       style={{zIndex:index}}
       // onMouseMove={(event)=>console.log('event',event)}
-      onClick={(event)=>clickOnCard(event)}
+      onClick={(event)=>isMyTurn && clickOnCard(event)}
     >
       <CardImg>
         CardInHand: {img}

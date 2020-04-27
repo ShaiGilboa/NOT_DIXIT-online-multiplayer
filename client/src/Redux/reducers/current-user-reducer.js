@@ -7,26 +7,30 @@ const initialState = {
                 friends,
                 stats,
             */
-  status: 'not-logged-on' /*  - logged-on
+  status: 'not-logged-in' /*  - logged-in
                               - error
-                              - fetching
+                              - creating-game
+                              - joining-game
+                              - playing
                           */
   //...
 }
 
 export default function  currentUserReducer(state = initialState, action) {
   switch (action.type) {
-    case '':
+    case 'USER_SIGN_IN':
       return produce(state, draftState => {
-        //change
+        draftState.info = action.userInfo;
+        draftState.status = 'logged-in';
       })
-    case '':
+    case 'USER_SIGN_OUT':
       return produce(state, draftState => {
-        //change
+        draftState.info = {};
+        draftState.status = 'not-logged-in';
       })
-    case '':
+    case 'CHANGE_CURRENT_USER_STATUS':
       return produce(state, draftState => {
-        //change
+        draftState.status = action.newStatus
       })
     case '':
       return produce(state, draftState => {

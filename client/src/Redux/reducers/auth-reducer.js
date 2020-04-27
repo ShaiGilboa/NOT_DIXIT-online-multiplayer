@@ -1,7 +1,10 @@
 import produce from 'immer';
 
 const initialState = {
-
+  status: 'not-authed', /* - not-authed
+                          - authed
+                        */
+  DBid: null,
 }
 
 export default function  authReducer(state = initialState, action) {
