@@ -171,16 +171,23 @@ const signOutHandler = async (req, res) => {
 // -- creates a 'game' in the DB
 // post: creatorEmail, deck?
 // returns: gameId
-const createNewGameOnFirebase = async (creatorEmail, newGameDeck) => {
+const createNewGameOnFirebase = async (creatorEmail, displayName, newGameDeck) => {
   const gamesRef = db.ref('currentGames')
   const appUsersRef = db.ref('appUsers')
   try {
     const newGameId = await gamesRef.push({
       creatorEmail,
+      gameStatus: 'start-of-round',
       gameDeck: newGameDeck,
       isOpen:true,
       round: {
-        activePlayer: creatorEmail,
+        activePlayer: 1,
+      },
+      players: {
+        1: {
+          email: creatorEmail,
+          displayName,
+        }
       }
     }).key
     await  appUsersRef.orderByChild("email").equalTo(creatorEmail).on('child_added', snapshot => {
@@ -196,7 +203,7 @@ const createNewGameOnFirebase = async (creatorEmail, newGameDeck) => {
 
 
 //return: hand
-const joinFirebaseGame = async (userEmail, gameId) => {
+const joinFirebaseGame = async (userEmail, displayName, gameId) => {
   const gameRef = db.ref('currentGames/'+gameId)
   const appUsersRef = db.ref('appUsers')
   console.log('gameId',gameId)
@@ -208,10 +215,13 @@ const joinFirebaseGame = async (userEmail, gameId) => {
         currentGame: gameId,
       })
     })
-    await gameRef.child('players/'+userName).set({
-      email: userEmail
+    // set the player and their turn.
+    await gameRef.child('players').once('value', snapshot => {
+      gameRef.child(`players/${snapshot.val().length}`).set({
+        userEmail,
+        displayName,
+      })
     })
-    // get hand from deck
     let hand = null;
     await gameRef.child('gameDeck').once('value', snapshot => {
       hand = getHandFromDeck(snapshot.val())
@@ -235,6 +245,7 @@ const joinFirebaseGame = async (userEmail, gameId) => {
 const placeCardInFirebaseDB = async (id, title, gameId) => {
   console.log('id',id)
   console.log('title',title)
+  console.log('gameId',gameId)
   const roundRef = db.ref('currentGames/'+gameId+'/round')
   try {
     await roundRef.once("value", snapshot => {
@@ -251,6 +262,20 @@ const placeCardInFirebaseDB = async (id, title, gameId) => {
   }
 }
 
+// adds the guess to a guesses endpoint
+const matchCardToTitleFirebaseDB = async (playerEmail, cardId, gameId) => {
+  const roundRef = db.ref(`currentGames/${gameId}/round`)
+  try {
+    await roundRef.child('guesses').once("value", snapshot => {
+      snapshot.ref.update({
+        [playerEmail]: cardId,
+      })
+    })
+  } catch (err) {
+    console.log('err',err)
+  }
+}
+
 //-----firebase /end
 
 //-----game
@@ -259,12 +284,15 @@ const placeCardInFirebaseDB = async (id, title, gameId) => {
 // get:
 // returns: 
 const startNewGameHandler = async (req, res) => {
-  const { creatorEmail } = req.body
+  const { 
+    creatorEmail,
+    displayName,
+  } = req.body
   console.log('creatorEmail',creatorEmail)
   try {
     const newGameDeck = getNewDeck() //here there will be some sort of function call to db to get the deck
     const hand = getHandFromDeck(newGameDeck)// this will have to check that we are getting 'available' cards
-    const firebaseGameId = await createNewGameOnFirebase(creatorEmail, newGameDeck) // creates the game, and returns the gameId
+    const firebaseGameId = await createNewGameOnFirebase(creatorEmail, displayName, newGameDeck) // creates the game, and returns the gameId
     // const id = newId();
     console.log('id',firebaseGameId)
     // console.log('newGameDeck',newGameDeck)
@@ -283,9 +311,9 @@ const startNewGameHandler = async (req, res) => {
 // post: userEmail, gameId
 // returns: hand
 const joinExistingGameHandler = async (req, res) =>{
-  const { userEmail, gameId } = req.body;
+  const { userEmail, gameId, displayName } = req.body;
   try {
-    const hand = await joinFirebaseGame(userEmail, gameId)
+    const hand = await joinFirebaseGame(userEmail, displayName, gameId)
     console.log('hand',hand)
     res.status(200).json({
       status: 200,
@@ -325,19 +353,35 @@ const submitGuessPlayersCard = async (req, res) => {
 // -- submit a card to the table, under player's title
 // post: req.body{the id of card chosen, title, guesserId}
 // returns: 
-const submitCardUnderTitle = async (req, res) => {
+const placeCardForRound = async (req, res) => {
   const { 
     id,
     title,
     gameId,
   } = req.body
-  console.log('id',id)
-  console.log('title',title)
   try {
     await placeCardInFirebaseDB(id, title, gameId)
     res.status(200).json({
       status: 200,
     })
+  } catch (err) {
+    console.log('err',err)
+  }
+}
+
+
+// -- send a card suggestion to match the given title
+// post: { playerEmail, cardId, title, gameId}
+// return success/fail
+const matchCardToTitle = async (req, res) => {
+  const {
+    playerEmail,
+    cardId,
+    gameId,
+  } = req.body
+  console.log('req.body',req.body)
+  try {
+    await matchCardToTitleFirebaseDB (playerEmail, cardId, gameId)
   } catch (err) {
     console.log('err',err)
   }
@@ -350,6 +394,7 @@ module.exports = {
   roundEndHandler,
   roundStartHandler,
   submitGuessPlayersCard,
-  submitCardUnderTitle,
+  placeCardForRound,
   joinExistingGameHandler,
+  matchCardToTitle,
 }

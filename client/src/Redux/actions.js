@@ -35,3 +35,12 @@ export const setIsMyTurn = (isMyTurn) => ({
   type: "SET_IS_MY_TURN",
   isMyTurn,
 })
+
+export const setTitledCard = (title) => ({
+  type: 'SET_TITLED_CARD',
+  title,
+})
+
+export const gameSignOut = () => ({
+  type: 'GAME_SIGN_OUT',
+})

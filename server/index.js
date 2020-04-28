@@ -13,8 +13,9 @@ const {
   roundEndHandler,
   roundStartHandler,
   submitGuessPlayersCard,
-  submitCardUnderTitle,
+  placeCardForRound,
   joinExistingGameHandler,
+  matchCardToTitle,
 } = require('./handlers');
 
 const PORT = process.env.PORT || 4000;
@@ -46,6 +47,7 @@ express()
   .post('/round-end', roundEndHandler)
   .post('/round-start', roundStartHandler)
   .post('/guess-players-card', submitGuessPlayersCard)
-  .post('/place-card', submitCardUnderTitle)
+  .post('/place-card', placeCardForRound)
+  .post('/match-card-to-title', matchCardToTitle)
 
   .listen(PORT, () => console.log(`Listening on port ${PORT}`));

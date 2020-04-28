@@ -6,8 +6,14 @@ import ReactDOM from 'react-dom';
 import {
   BrowserRouter as Router,
   Switch,
-  Route,
+  Route,useHistory
 } from 'react-router-dom';
+import {
+  useSelector,
+} from 'react-redux';
+// import {
+//   useHistory,
+// } from 'react-router';
 import styled from 'styled-components';
 
 import GlobalStyles from '../GlobalStyles';

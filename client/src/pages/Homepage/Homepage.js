@@ -26,10 +26,18 @@ const Homepage = () => {
 
   const [gameId, setGameId] = useState('')
 
+  const changeStatusToPlaying = (gameId, hand) =>{
+    dispatch(newGameId(gameId));// and status = 'playing'
+    dispatch(setNewHand(hand));// and status = 'playing'
+    dispatch(changeCurrentUserStatus('playing'))
+    history.push('/game')
+  }
+
   const startNewGame = () => {
     dispatch(changeCurrentUserStatus('creating-game'))
     const body= {
       creatorEmail: currentUserInfo.info.email,
+      displayName: currentUserInfo.info.displayName,
     }
     fetch('/start-new-game', {
       method: 'POST',
@@ -43,10 +51,11 @@ const Homepage = () => {
       .then(res=>{
         console.log('res',res)
         if(res.status===200) {
-          dispatch(newGameId(res.gameId))
-          dispatch(setNewHand(res.hand));
-          dispatch(changeCurrentUserStatus('playing'))
-          history.push('/game')
+          changeStatusToPlaying(res.gameId, res.hand);
+          // dispatch(newGameId(res.gameId));// and status = 'playing'
+          // dispatch(setNewHand(res.hand));// and status = 'playing'
+          // dispatch(changeCurrentUserStatus('playing'))
+          // history.push('/game')
         }
       })
   }
@@ -58,6 +67,7 @@ const Homepage = () => {
     dispatch(changeCurrentUserStatus('joining-game'))
     const body = {
       userEmail: currentUserInfo.info.email,
+      displayName: currentUserInfo.info.displayName,
       gameId,
     }
     fetch('/join-existing-game', {
@@ -71,10 +81,11 @@ const Homepage = () => {
     .then(res=>res.json())
     .then(res=>{
       if(res.status===200) {
-        dispatch(newGameId(res.gameId))
-        dispatch(setNewHand(res.hand));
-        dispatch(changeCurrentUserStatus('playing'))
-        history.push('/game')
+        changeStatusToPlaying(res.gameId, res.hand);
+        // dispatch(newGameId(res.gameId)); // and status = 'playing'
+        // dispatch(setNewHand(res.hand)); // and status = 'playing'
+        // dispatch(changeCurrentUserStatus('playing'))
+        // history.push('/game')
       }
     })
   }

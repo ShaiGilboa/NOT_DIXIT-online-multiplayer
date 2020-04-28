@@ -18,7 +18,14 @@ const ChosenCardModal = ({
   setChosenCardModalFlag,
   }) => {
   const dispatch = useDispatch();
-  const gameId = useSelector(state=>state.gameData.gameId)
+  const {gameId} = useSelector(state=>state.gameData)
+  const {
+    titledCard,
+    isMyTurn,
+  }= useSelector(state=>state.roundData)
+  const {
+    info,
+  } = useSelector(state=>state.currentUserInfo)
   const [title, setTitle] = useState('')
 
   const valueChange = (event) => {
@@ -29,14 +36,8 @@ const ChosenCardModal = ({
     setTitle('')
   },[chosenCard])
 
-  const cardChosen = (event) => {
-    event.preventDefault();
-    // dispatch chosen card
-    // close modal
-    if(title.length>0){
-      dispatch(chooseCard(chosenCard.id, title));
-      console.log('title',title)
-      console.log('chosenCard.id',chosenCard.id)
+  const setRoundTitledCard = () => {
+    dispatch(chooseCard(chosenCard.id, title));
       const body = {
         id: chosenCard.id,
         title,
@@ -51,11 +52,34 @@ const ChosenCardModal = ({
         },
       })
         .then(res=>res.json())
-        .then(res=>{
-          setChosenCardModalFlag(false)
-          console.log('res',res)
-        }
-        )
+        .then(res=>{setChosenCardModalFlag(false)})
+  }
+
+  const setGuessCardUnderTitle = () => {
+    const body = {
+        playerEmail: info.email,
+        cardId: chosenCard.id,
+        gameId,
+      }
+    fetch('/match-card-to-title', {
+      method: "POST",
+      headers: {
+          "Content-Type": "application/json",
+          "Accept": "application/json"
+        },
+      body: JSON.stringify(body),
+    })
+    .then(res=>res.json())
+    .then(res=>{
+      console.log('res',res)
+    })
+  }
+
+  const cardChosen = (event) => {
+    event.preventDefault();
+    if(title.length>0){
+      if(isMyTurn) setRoundTitledCard()
+      if(titledCard.title) setGuessCardUnderTitle()
     } else {
       console.log('error in title');// error in title;
     }

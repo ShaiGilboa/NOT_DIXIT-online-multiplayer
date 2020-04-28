@@ -2,6 +2,9 @@ import React, {
   useContext,
   useEffect,
 } from 'react';
+import {
+  useHistory,
+} from 'react-router-dom';
 import styled from 'styled-components';
 
 import {
@@ -19,7 +22,9 @@ const Navbar = () => {
   } = useContext(AuthContext);
 
   const gameData = useSelector(state=>state.gameData)
+  const roundData = useSelector(state=>state.roundData)
   const currentUserInfo = useSelector(state=>state.currentUserInfo)
+  const history = useHistory();
   // let initials;
 
   const getInitial = () =>{
@@ -29,25 +34,22 @@ const Navbar = () => {
     return initials
   }
 
-  // useEffect(()=>{
-  //   if(currentUserInfo.info.displayName){
-  //     initials
-  //   }
-  // },[currentUserInfo])
+  useEffect(()=>{
+    if(!currentUserInfo.info.email)history.push('/')
+  },[currentUserInfo])
 
   return (
     <Wrapper>
       <Title>Dixit!</Title>
-      {gameData.titledCard.title ? <div>your Title: {gameData.titledCard.title}</div>: null}
+      {roundData.titledCard.title ? <div>card Title: {roundData.titledCard.title}</div>: null}
       {gameData.gameId ? <div>your game id: {gameData.gameId}</div>: null}
       
       <UserInfoBox>
-        {currentUserInfo.email 
+        {currentUserInfo.info.email 
           ? (<>
             <button
               onClick={()=>handleSignOut()}
             >Sign Out</button>
-            <div>user logo</div>
             {currentUserInfo.info.photoURL 
               ? <UserAvatar src={currentUserInfo.info.photoURL} />
               : <Initials><p>{getInitial()}</p></Initials>}

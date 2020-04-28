@@ -12,6 +12,7 @@ import {
 
 import {
   setIsMyTurn,
+  setTitledCard,
 } from '../../Redux/actions';
 
 import CardInHand from '../../components/CardInHand';
@@ -21,16 +22,17 @@ import AllPlayedCards from '../../components/AllPlayedCards';
 const Game = () => {
   const dispatch = useDispatch()
 
-  const {
-    hand,
-    titledCard,
-    isMyTurn,
-    gameId,
-  } = useSelector(state=>state.gameData)
+  // const {
+  //   hand,
+  //   titledCard,
+  //   isMyTurn,
+  //   gameId,
+  //   status,
+  const gameData = useSelector(state=>state.gameData)
+  const gameId = gameData.gameId;
+  const roundData = useSelector(state=>state.roundData)
+  const {hand, titledCard, isMyTurn} = roundData
   const email = useSelector(state=>state.currentUserInfo.info.email)
-  // const hand = useSelector(state=>state.gameData.hand)
-  // const titledCard = useSelector(state=>state.gameData.titledCard)
-  // const isMyTurn = useSelector(state=>state.gameData.isMyTurn)
   const [chosenTitle, setChosenTitle] = useState(false)
   const [chosenCardModalFlag, setChosenCardModalFlag] = useState(false)
   const [chosenCard, setChosenCard] = useState({
@@ -41,14 +43,22 @@ const Game = () => {
   useEffect(()=> {
     const currentRoundRef = firebase.database().ref(`currentGames/`+gameId+'/round');
     currentRoundRef.child('activePlayer').on('value', (snapshot) => {
-      console.log('snapshot.val()',snapshot.val())
-      if(email === snapshot.val()){
-        console.log("active player");
-        dispatch(setIsMyTurn(true))
-      } else {
-        console.log('not active player')
-        dispatch(setIsMyTurn(false))
-      }
+      console.log('snapshot.val()33',snapshot.val())
+      const activePlayerNumber = snapshot.val()
+      const playersInCurrentGameRef = firebase.database().ref('currentGames/'+gameId+'/players')
+      playersInCurrentGameRef.on('value', playersSnapshot => {
+        console.log('email',email)
+        if(snapshot.val()){
+          console.log('playersSnapshot.val().email',playersSnapshot.val()[activePlayerNumber].email)
+          if(email === playersSnapshot.val()[activePlayerNumber].email){
+            console.log("active player");
+            dispatch(setIsMyTurn(true))
+          } else {
+            console.log('not active player')
+            dispatch(setIsMyTurn(false))
+          }
+        }
+      })
     })
 
     return () => {
@@ -62,14 +72,7 @@ const Game = () => {
     const currentRoundRef = firebase.database().ref(`currentGames/`+gameId+'/round');
     console.log('gameId',gameId)
     currentRoundRef.child('titledCard').on('value', (snapshot) => {
-      console.log('snapshot.val()',snapshot.val())
-      // if(email === snapshot.val()){
-      //   console.log("active player");
-      //   dispatch(setIsMyTurn(true))
-      // } else {
-      //   console.log('not active player')
-        // dispatch(setIsMyTurn(false))
-      // }
+      if(snapshot.val())dispatch(setTitledCard(snapshot.val().title))
     })
 
     return () => {
@@ -79,6 +82,15 @@ const Game = () => {
     };
   },[titledCard])
 
+  const clickOnCard = (id, img) => {
+    if (roundData.status==='submitting-titled-card' || titledCard.title)
+    setChosenCardModalFlag(true);
+    setChosenCard({
+      id,
+      img,
+    });
+  }
+
   return (
     <Wrapper data-css='cards in hand'>
       {chosenCardModalFlag && <ChosenCardModal
@@ -86,16 +98,16 @@ const Game = () => {
         setChosenCardModalFlag={setChosenCardModalFlag}
       />}
       {titledCard.title && (<AllPlayedCards/>)}
-      <p>isMyTurn: {isMyTurn}</p>
+      <p>isMyTurn: {`${isMyTurn}`}</p>
       <CardsInHand>
-        {hand && hand.map((card, index)=><CardInHand
+        {hand.length && hand.map((card, index)=><CardInHand
           key={card.id}
           id={card.id}
           img={card.imgSrc}
           index={index}
           setChosenCardModalFlag={setChosenCardModalFlag}
           setChosenCard={setChosenCard}
-          isMyTurn={isMyTurn}
+          onClick={clickOnCard}
         />)}
       </CardsInHand>
     </Wrapper>

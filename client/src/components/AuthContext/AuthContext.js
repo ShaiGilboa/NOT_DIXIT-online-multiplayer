@@ -21,6 +21,7 @@ import {
 import {
   userSignIn,
   userSignOut,
+  gameSignOut,
 } from '../../Redux/actions';
 
 export const AuthContext = createContext(null);
@@ -55,6 +56,7 @@ const AuthProvider = ({
       if(res.status===204){
         setAppUser({})
         dispatch(userSignOut());
+        dispatch(gameSignOut())
       }
     })
   }
@@ -109,6 +111,10 @@ const AuthProvider = ({
     </AuthContext.Provider>
   );
 };
+
+// providers.googleProvider.setCustomParameters({
+//   prompt: 'select_account',
+// })
 
 export default withFirebaseAuth({
     providers,
