@@ -6,8 +6,6 @@ import styled from 'styled-components';
 
 import {
   chooseCard,
-  changeRoundStatus,
-  addSubmissionToSubmissionsArr,
 } from '../../Redux/actions';
 
 import {
@@ -15,18 +13,16 @@ import {
   useDispatch,
 } from 'react-redux';
 
-const ChosenCardModal = ({
+const MatchCardModal = ({
   chosenCard,
-  setChosenCardModalFlag,
+  setMatchCardModalFlag,
   }) => {
   const dispatch = useDispatch();
   const {gameId} = useSelector(state=>state.gameData)
-  const roundData = useSelector(state=>state.roundData)
   const {
     titledCard,
     isMyTurn,
-    turnNumber,
-  } = roundData
+  }= useSelector(state=>state.roundData)
   const {
     info,
   } = useSelector(state=>state.currentUserInfo)
@@ -40,11 +36,10 @@ const ChosenCardModal = ({
     setTitle('')
   },[chosenCard])
 
-  const setRoundTitledCard = () => {
+  const setMatchedCard = () => {
     dispatch(chooseCard(chosenCard.id, title));
       const body = {
         id: chosenCard.id,
-        img: chosenCard.img,
         title,
         gameId,
       }
@@ -57,26 +52,16 @@ const ChosenCardModal = ({
         },
       })
         .then(res=>res.json())
-        .then(res=>{
-          if (res.status===200) {
-            dispatch(changeRoundStatus('waiting-for-other-submissions'))
-            // adding the titled card to the submissionsArr
-            dispatch(addSubmissionToSubmissionsArr({id: chosenCard.id, img:chosenCard.img}))
-            setChosenCardModalFlag(false)
-          } else {
-            console.log('error in submission');
-          }
-        })
+        .then(res=>{setChosenCardModalFlag(false)})
   }
 
   const setGuessCardUnderTitle = () => {
     const body = {
         playerEmail: info.email,
         cardId: chosenCard.id,
-        cardImg: chosenCard.img,
         gameId,
-        turnNumber,
       }
+      // TODO: not a post, maybe a PUT?
     fetch('/match-card-to-title', {
       method: "POST",
       headers: {
@@ -87,22 +72,14 @@ const ChosenCardModal = ({
     })
     .then(res=>res.json())
     .then(res=>{
-      if (res.status===200) {
-        dispatch(changeRoundStatus('waiting-for-other-submissions'))
-        // closing the Modal
-        setChosenCardModalFlag(false)
-      } else {
-        console.log('error in submission');
-      }
     })
   }
 
   const cardChosen = (event) => {
     event.preventDefault();
     if(title.length>0){
-      if(roundData.status==='submitting-titled-card') setRoundTitledCard()
-    } else if(roundData.status==='matching-card-to-title'){ 
-      setGuessCardUnderTitle()
+      if(isMyTurn) setRoundTitledCard()
+      if(titledCard.title) setGuessCardUnderTitle()
     } else {
       console.log('error in title');// error in title;
     }
@@ -119,16 +96,10 @@ const ChosenCardModal = ({
         <CardImg>{chosenCard.img}</CardImg>
         <Info>
           <div>
-            {roundData.status==='submitting-titled-card'
-              ? (<>
-              <label htmlFor="title">What title? </label>
-              <input type="text" id="title" name="title" placeholder="title" value={title}
-                onChange={valueChange}
-              />
-              </>)
-              : (
-                <label>does this card match {titledCard.title}?</label>
-              )}
+            <label htmlFor="title">What title? </label>
+            <input type="text" id="title" name="title" placeholder="title" value={title}
+              onChange={valueChange}
+            />
             <button type="submit">submit</button>
           </div>
         </Info>
@@ -144,12 +115,12 @@ const Wrapper = styled.div`
   position: relative;
   width: 100%;
   z-index: 100;
-  background-color: rgba(60,60,60,0.5);
-  /* opacity: 0.5; */
+  background-color: rgb(60,60,60);
+  opacity: 0.5;
 `;
 
 const ChosenCardModalContainer = styled.form`
-  position: relative;
+  position: absolute;
   width: 400px;
   height: 400px;
   margin: auto;
@@ -158,7 +129,7 @@ const ChosenCardModalContainer = styled.form`
   display: flex;
   flex-direction:row;
   background-color: white;
-  /* opacity: 1; */
+  opacity: 2;
 `;
 
 const CardImg = styled.div`

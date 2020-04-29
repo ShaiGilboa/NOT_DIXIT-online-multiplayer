@@ -65,7 +65,6 @@ const RNDable = ({
 
   const resizeHandler = (event) => {
     if(event.repeat){return}
-    console.log('resize handler');
     document.addEventListener('mouseup',mouseupHandler)
     if(isMouseDown && event.pageX !== resizeXY.x){
       setWidth(width+(event.pageX-resizeXY.x))
@@ -85,7 +84,6 @@ const RNDable = ({
 
   const dragMoveHandler = (event) => {
     if(event.repeat) {return}
-    console.log('drag handler');
     document.addEventListener('mouseup',mouseupHandler)
     if(isDragDown && event.clientX !== dragXY.x) {
       setLeft(left + (event.clientX - dragXY.x))
@@ -126,7 +124,6 @@ const RNDable = ({
 
   const mouseupHandler = (event) => {
     if(event.repeat) {return}
-    console.log('mouseuoHandler');
     setDragXY({
       x:event.clientX,
       y:event.clientY,

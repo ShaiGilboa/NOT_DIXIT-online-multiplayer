@@ -13,13 +13,15 @@ const initialState = {
                         - waiting-for-title
                         - voting
                       */
+  turnNumber: null,
+  submissionsArr: [],
+  guessTheCard: [],
   //...
 }
 
 export default function  currentUserReducer(state = initialState, action) {
   switch (action.type) {
     case 'SET_NEW_HAND':
-    // console.log('action',action)
       return produce(state, draftState => {
         draftState.hand = action.newHand;
         draftState.status = 'playing'
@@ -42,12 +44,27 @@ export default function  currentUserReducer(state = initialState, action) {
     case 'SET_TITLED_CARD':
       return produce(state, draftState => {
         draftState.titledCard.title = action.title;
-        draftState.status = 'waiting-for-other-submissions';
+        draftState.status = state.isMyTurn
+        ? 'waiting-for-other-submissions'
+        : 'matching-card-to-title'
       })
-    case '':
+    case 'SET_PLAYER_TURN':
       return produce(state, draftState => {
-        //change
+        draftState.turnNumber = action.turnNumber;
       })
+    case 'CHANGE_ROUND_STATUS':
+      return produce(state, draftState => {
+        draftState.status = action.newStatus;
+      })
+    case 'ADD_NEW_SUBMISSION_TO_ARRAY':
+      return produce(state, draftState => {
+        draftState.submissionsArr = state.submissionsArr.concat(action.card);
+      })
+    case 'RESHUFFLE_SUBMISSIONS':
+      return produce(state, draftState => {
+        draftState.submissionsArr = action.reShuffledSubmissions;
+      })
+    
     default:
       return state;
   }

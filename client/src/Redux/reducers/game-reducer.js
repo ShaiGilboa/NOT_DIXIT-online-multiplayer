@@ -7,6 +7,7 @@ const initialState = {
                             - playing
                         */
   gameId: null,
+  playersAmount: null,
 }
 
 export default function  currentUserReducer(state = initialState, action) {
@@ -17,13 +18,16 @@ export default function  currentUserReducer(state = initialState, action) {
         draftState.status = 'playing'
       })
     case 'GAME_SIGN_OUT':
-    console.log('action',action)
       return produce(state, draftState => {
         draftState.hand=[];
         draftState.titledCard = {};
         draftState.status = 'waiting';
         draftState. gameId = null;
         draftState.isMyTurn = false;
+      })
+    case 'SET_PLAYERS_AMOUNT':
+      return produce(state, draftState => {
+        draftState.playersAmount = action.newAmount;
       })
     case '':
       return produce(state, draftState => {

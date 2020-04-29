@@ -44,3 +44,28 @@ export const setTitledCard = (title) => ({
 export const gameSignOut = () => ({
   type: 'GAME_SIGN_OUT',
 })
+
+export const setPlayerTurn = (turnNumber) => ({
+  type: 'SET_PLAYER_TURN',
+  turnNumber,
+})
+
+export const changeRoundStatus = (newStatus) => ({
+  type: 'CHANGE_ROUND_STATUS',
+  newStatus,
+})
+
+export const addSubmissionToSubmissionsArr = (card) => ({
+  type: 'ADD_NEW_SUBMISSION_TO_ARRAY',
+  card,
+})
+
+export const reShuffleSubmissions = (reShuffledSubmissions) => ({
+  type: 'RESHUFFLE_SUBMISSIONS',
+  reShuffledSubmissions,
+})
+
+export const setPlayersAmount = (newAmount) => ({
+  type: 'SET_PLAYERS_AMOUNT',
+  newAmount,
+})

@@ -17,6 +17,7 @@ import {
   changeCurrentUserStatus,
   setNewHand,
   newGameId,
+  setPlayerTurn,
 } from '../../Redux/actions'
 
 const Homepage = () => {
@@ -49,21 +50,15 @@ const Homepage = () => {
     })
       .then(res=>res.json())
       .then(res=>{
-        console.log('res',res)
         if(res.status===200) {
           changeStatusToPlaying(res.gameId, res.hand);
-          // dispatch(newGameId(res.gameId));// and status = 'playing'
-          // dispatch(setNewHand(res.hand));// and status = 'playing'
-          // dispatch(changeCurrentUserStatus('playing'))
-          // history.push('/game')
+          dispatch(setPlayerTurn(1))
         }
       })
   }
 
   const joinExistingGame = (event) => {
     event.preventDefault();
-    console.log('gameId',gameId)
-    console.log('currentUserInfo.info',currentUserInfo.info.email)
     dispatch(changeCurrentUserStatus('joining-game'))
     const body = {
       userEmail: currentUserInfo.info.email,
@@ -82,10 +77,7 @@ const Homepage = () => {
     .then(res=>{
       if(res.status===200) {
         changeStatusToPlaying(res.gameId, res.hand);
-        // dispatch(newGameId(res.gameId)); // and status = 'playing'
-        // dispatch(setNewHand(res.hand)); // and status = 'playing'
-        // dispatch(changeCurrentUserStatus('playing'))
-        // history.push('/game')
+          dispatch(setPlayerTurn(res.turnNumber))
       }
     })
   }
@@ -111,7 +103,6 @@ const Homepage = () => {
             />
             <button
               type='submit'
-              // onClick={()=>joinExistingGame()}
             >Would you like to join an existing game?
             </button>
           </form>

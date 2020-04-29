@@ -25,20 +25,10 @@ const CardInHand = ({
 
   const dispatch = useDispatch();
 
-  // const clickOnCard = (event) => {
-  //   console.log('id',id)
-  //   setChosenCardModalFlag(true);
-  //   setChosenCard({
-  //     id,
-  //     img,
-  //   });
-  // }
-
   return (
     <CardWrapper
       index={index}
       style={{zIndex:index}}
-      // onMouseMove={(event)=>console.log('event',event)}
       onClick={(event)=>onClick(id, img)}
     >
       <CardImg>

@@ -41,9 +41,8 @@ const AuthProvider = ({
 
   const handleSignOut= () => {
     signOut();
-    console.log('appUser',appUser)
     const body = {
-      email: appUser.email,
+      email: currentUser.info.email,
     }
     fetch('/sign-out', {
       method: 'PUT',
@@ -62,23 +61,7 @@ const AuthProvider = ({
   }
 
   useEffect(() => {
-    const appUsersRef = firebaseDB.ref('appUsers')
-
-    appUsersRef.on('value', (status) => {
-      console.log('status.val()',status.val())
-
-    })
-
-    return () => {
-      const appUsersRef = firebaseDB.ref('appUsers')
-      appUsersRef.off();
-    }
-  }, [])
-
-  useEffect(() => {
     if (user){
-      // console.log('user',user)
-      console.log('sign-in');
       fetch(`/sign-in`, {
         method: "POST",
         headers: {
@@ -92,7 +75,6 @@ const AuthProvider = ({
       })
         .then(res => res.json())
         .then(json => {
-          console.log('json',json)
           setAppUser(json.data);
           dispatch(userSignIn(json.data));
         })
@@ -101,20 +83,17 @@ const AuthProvider = ({
 
   return (
     <AuthContext.Provider value={{
-      // appUser,
       signInWithGoogle,
       handleSignOut,
-      // message,
-      // change,
       }}>
       {children}
     </AuthContext.Provider>
   );
 };
 
-// providers.googleProvider.setCustomParameters({
-//   prompt: 'select_account',
-// })
+providers.googleProvider.setCustomParameters({
+  prompt: 'select_account',
+})
 
 export default withFirebaseAuth({
     providers,
