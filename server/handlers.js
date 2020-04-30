@@ -90,15 +90,12 @@ const randFromArr = (amount, arr) => {
 }
 
 const getHandFromDeck = (deck) => {
-  // console.log('deck',deck)
   const options = deck.filter(card=>card.isAvailable)
-  // console.log('options',options)
   const hand = randFromArr(7, options);
   hand.forEach(cardInHand => {
     cardInHand.isAvailable = false
   })
-  // console.log('hand in func',hand)
-  // console.log('deck',deck)
+
   return hand;
 }
 
@@ -120,7 +117,7 @@ const signInHandler = async (req, res) => {
     }
     if (returningUser) {
       var ref = db.ref("appUsers");
-      ref.orderByChild("email").equalTo(req.body.email).on("child_added", function(snapshot) {
+      ref.orderByChild("email").equalTo(req.body.email).once("child_added", function(snapshot) { // changed .on to .once
         const ref = db.ref('appUsers/'+snapshot.key).update({
           isActive: true,
         })
@@ -150,22 +147,38 @@ const signInHandler = async (req, res) => {
   } catch (err) {
     console.log('err',err)
   }
-
 }
 
+// removes the 'currentGame' from the useNode, and added the game to the 'past games' node.
+const GameOverHandle = async (userId, gameId) => {
+  // push the last game to 'pastGames'
+  db.ref('currentGames/' + gameId).once('value', currentGameSnapshot => { // changed .on to .once
+    db.ref('appUsers/'+userId+'/pastGames').update({
+      [gameId]:currentGameSnapshot.val(),
+    })
+  })
+  // removing the 'currentGame'
+  db.ref('appUsers/'+userId+'/currentGame').remove()
+}
 // -- changes status of a user
 // put: req.body{}
 // returns: 
 const signOutHandler = async (req, res) => {
   const {email} = req.body
-  var ref = db.ref("appUsers");
-  await  ref.orderByChild("email").equalTo(email).on("child_added", function(snapshot) {
-      console.log('craigcraig',snapshot.key);
-      const ref = db.ref('appUsers/'+snapshot.key).update({
+  const ref = db.ref("appUsers");
+  try {
+    await  ref.orderByChild("email").equalTo(email).once("child_added", async function(snapshot) { // changed .on to .once
+      // register that the user has logged out
+      db.ref('appUsers/'+snapshot.key).update({
         isActive: false,
       })
+      const currentGameId = snapshot.val().currentGame
+      await GameOverHandle(snapshot.key, currentGameId)
     })
-  res.status(204).json({status:204})
+    res.status(204).json({status:204})
+  } catch (err) {
+    console.log('err',err)
+  }
 }
 
 // -- creates a 'game' in the DB
@@ -175,12 +188,14 @@ const createNewGameOnFirebase = async (creatorEmail, displayName, newGameDeck) =
   const gamesRef = db.ref('currentGames')
   const appUsersRef = db.ref('appUsers')
   try {
-    const newGameId = await gamesRef.push({
+    const newGameId = Date.now()
+    await gamesRef.child(`${newGameId}`).set({
       creatorEmail,
-      gameStatus: 'start-of-round',
+      gameStatus: 'playing',
       gameDeck: newGameDeck,
       isOpen:true,
       round: {
+        status: 'waiting',
         activePlayer: 1,
       },
       players: {
@@ -189,8 +204,8 @@ const createNewGameOnFirebase = async (creatorEmail, displayName, newGameDeck) =
           displayName,
         }
       }
-    }).key
-    await  appUsersRef.orderByChild("email").equalTo(creatorEmail).on('child_added', snapshot => {
+    })
+    await appUsersRef.orderByChild("email").equalTo(creatorEmail).once('child_added', snapshot => {
       db.ref('appUsers/'+snapshot.key).update({
         currentGame: newGameId,
       })
@@ -206,18 +221,17 @@ const createNewGameOnFirebase = async (creatorEmail, displayName, newGameDeck) =
 const joinFirebaseGame = async (userEmail, displayName, gameId) => {
   const gameRef = db.ref('currentGames/'+gameId)
   const appUsersRef = db.ref('appUsers')
-  console.log('gameId',gameId)
   try {
-    let userName= null
-    await appUsersRef.orderByChild("email").equalTo(userEmail).on('child_added', snapshot => {
-      userName = snapshot.val().displayName
+    let turnNumber = null
+    await appUsersRef.orderByChild("email").equalTo(userEmail).once('child_added', snapshot => { // changed .on to .once
       db.ref('appUsers/'+snapshot.key).update({
         currentGame: gameId,
       })
     })
     // set the player and their turn.
     await gameRef.child('players').once('value', snapshot => {
-      gameRef.child(`players/${snapshot.val().length}`).set({
+      turnNumber = snapshot.numChildren()+1
+      gameRef.child(`players/${turnNumber}`).set({
         userEmail,
         displayName,
       })
@@ -234,7 +248,7 @@ const joinFirebaseGame = async (userEmail, displayName, gameId) => {
         })
       })
     })
-    return hand;
+    return {hand, turnNumber};
   } catch (err) {
     console.log('err',err)
   }
@@ -242,17 +256,16 @@ const joinFirebaseGame = async (userEmail, displayName, gameId) => {
 
 // -- sets the titled card in the DB
 //return true/false for success
-const placeCardInFirebaseDB = async (id, title, gameId) => {
-  console.log('id',id)
-  console.log('title',title)
-  console.log('gameId',gameId)
-  const roundRef = db.ref('currentGames/'+gameId+'/round')
+const placeCardInFirebaseDB = async (id, img, title, gameId, turnNumber) => {
+  const cardsInPlayRef = db.ref('currentGames/'+gameId+'/round/cardsInPlay')
   try {
-    await roundRef.once("value", snapshot => {
+    await cardsInPlayRef.once("value", snapshot => {
       snapshot.ref.update({
-          titledCard: {
+          [id]: {
             id,
+            img,
             title,
+            status: 'titledCard',
           }
         })
     })
@@ -263,13 +276,62 @@ const placeCardInFirebaseDB = async (id, title, gameId) => {
 }
 
 // adds the guess to a guesses endpoint
-const matchCardToTitleFirebaseDB = async (playerEmail, cardId, gameId) => {
+const matchCardToTitleFirebaseDB = async (playerEmail, cardId, cardImg, gameId, turnNumber) => {
+  const roundRef = db.ref(`currentGames/${gameId}/round`)
+  const cardsInPlayRef = db.ref('currentGames/'+gameId+'/round/cardsInPlay')
+  try {
+    // await roundRef.child('submissionsByPlayerTurnNumber').once("value", guessSnapshot => {
+    //   guessSnapshot.ref.update({
+    //     [turnNumber]: {
+    //       id: cardId,
+    //       img: cardImg,
+    //     }
+    //   })
+    // })
+    await cardsInPlayRef.once('value', cardsInPlaySnapshot => {
+      cardsInPlaySnapshot.ref.update({
+        [cardId]: {
+          id: cardId,
+          img: cardImg,
+          status: 'submission',
+          submittedBy: turnNumber,
+        }
+      })
+    })
+  } catch (err) {
+    console.log('err',err)
+  }
+}
+
+// sets the submissionsArray in DB
+const setSubmissionsArrInFirebaseDB = async (submissionsArr, gameId) => {
   const roundRef = db.ref(`currentGames/${gameId}/round`)
   try {
-    await roundRef.child('guesses').once("value", snapshot => {
-      snapshot.ref.update({
-        [playerEmail]: cardId,
-      })
+    await roundRef.update({
+      cardsToGuess: submissionsArr
+    })
+  } catch (err) {
+    console.log('err',err)
+  }
+}
+
+// send vote to DB
+const sendVoteToDB = async (gameId, cardId) => {
+  const cardIdRef = db.ref(`currentGames/${gameId}/round/cardsInPlay/${cardId}`)
+  console.log('gameId',gameId)
+  console.log('cardId',cardId)
+  try {
+    cardIdRef.once('value', cardVotesSnapshot => {
+      console.log('cardVotesSnapshot.val()',cardVotesSnapshot.val())
+      if(cardVotesSnapshot.val().votes) {
+        cardVotesSnapshot.ref.update({
+          votes: cardVotesSnapshot.val().votes + 1
+        })
+      } else {
+        cardVotesSnapshot.ref.update({
+          votes: 1
+        })
+      }
     })
   } catch (err) {
     console.log('err',err)
@@ -288,15 +350,11 @@ const startNewGameHandler = async (req, res) => {
     creatorEmail,
     displayName,
   } = req.body
-  console.log('creatorEmail',creatorEmail)
   try {
     const newGameDeck = getNewDeck() //here there will be some sort of function call to db to get the deck
     const hand = getHandFromDeck(newGameDeck)// this will have to check that we are getting 'available' cards
     const firebaseGameId = await createNewGameOnFirebase(creatorEmail, displayName, newGameDeck) // creates the game, and returns the gameId
-    // const id = newId();
-    console.log('id',firebaseGameId)
-    // console.log('newGameDeck',newGameDeck)
-    // console.log('hand',hand)
+
     if (newGameDeck.length) res.status(200).json({
       status: 200,
       hand,
@@ -313,12 +371,12 @@ const startNewGameHandler = async (req, res) => {
 const joinExistingGameHandler = async (req, res) =>{
   const { userEmail, gameId, displayName } = req.body;
   try {
-    const hand = await joinFirebaseGame(userEmail, displayName, gameId)
-    console.log('hand',hand)
+    const {hand, turnNumber} = await joinFirebaseGame(userEmail, displayName, gameId)
     res.status(200).json({
       status: 200,
       hand,
       gameId,
+      turnNumber,
     })
   } catch (err) {
     console.log('err',err)
@@ -356,11 +414,12 @@ const submitGuessPlayersCard = async (req, res) => {
 const placeCardForRound = async (req, res) => {
   const { 
     id,
+    img,
     title,
     gameId,
   } = req.body
   try {
-    await placeCardInFirebaseDB(id, title, gameId)
+    await placeCardInFirebaseDB(id, img, title, gameId)
     res.status(200).json({
       status: 200,
     })
@@ -377,11 +436,26 @@ const matchCardToTitle = async (req, res) => {
   const {
     playerEmail,
     cardId,
+    cardImg,
     gameId,
+    turnNumber,
   } = req.body
-  console.log('req.body',req.body)
   try {
-    await matchCardToTitleFirebaseDB (playerEmail, cardId, gameId)
+    await matchCardToTitleFirebaseDB(playerEmail, cardId, cardImg, gameId, turnNumber)
+    res.status(200).json({
+      status: 200,
+    })
+  } catch (err) {
+    console.log('err',err)
+  }
+}
+
+// puts a vote token on a titled card
+// PUT: {gameId, cardId}
+const votingHandler = async (req, res) =>{
+  const {gameId, cardId} = req.params
+  try {
+    await sendVoteToDB(gameId, cardId)
   } catch (err) {
     console.log('err',err)
   }
@@ -397,4 +471,6 @@ module.exports = {
   placeCardForRound,
   joinExistingGameHandler,
   matchCardToTitle,
+  // sendSubmissionsArrHandler,
+  votingHandler,
 }

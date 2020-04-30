@@ -6,6 +6,7 @@ import styled from 'styled-components';
 
 import {
   chooseCard,
+  setMySubmission,
 } from '../../Redux/actions';
 
 import {
@@ -61,6 +62,8 @@ const MatchCardModal = ({
         cardId: chosenCard.id,
         gameId,
       }
+      //adding the submission to the state, as reference later.
+    dispatch(setMySubmission(chosenCard.id))
       // TODO: not a post, maybe a PUT?
     fetch('/match-card-to-title', {
       method: "POST",

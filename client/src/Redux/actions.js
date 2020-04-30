@@ -69,3 +69,13 @@ export const setPlayersAmount = (newAmount) => ({
   type: 'SET_PLAYERS_AMOUNT',
   newAmount,
 })
+
+export const setMySubmission = (id) => ({
+  type: 'SET_MY_SUBMISSION',
+  id,
+})
+
+export const setAmountOfVotes = (newAmount) => ({
+  type: 'SET_AMOUNT_OF_VOTES',
+  newAmount,
+})

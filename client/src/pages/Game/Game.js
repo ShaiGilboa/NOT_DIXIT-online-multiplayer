@@ -22,6 +22,7 @@ import {
   addSubmissionToSubmissionsArr,
   reShuffleSubmissions,
   setPlayersAmount,
+  setAmountOfVotes,
 } from '../../Redux/actions';
 
 import CardInHand from '../../components/CardInHand';
@@ -108,43 +109,6 @@ const Game = () => {
     };
   },[roundData.status])
 
-// Fetch once the submissionsArr is the same length as the amount of 'other' players we can start the voting
-  useEffect(()=>{
-    firebase.database().ref(`currentGames/${gameId}/players`).on('value', playersSnapshot => {
-      const amountOfPlayers = playersSnapshot.numChildren();
-      if(submissionsArr.length===(amountOfPlayers)){
-        // send gameId and the submissisonsArr to db
-        const body = {
-          gameId,
-          submissionsArr,
-        }
-        // TODO: not a post, maybe a PUT
-        fetch('/send-submissions-array', {
-          method: "POST",
-          headers: {
-              "Content-Type": "application/json",
-              "Accept": "application/json"
-            },
-          body: JSON.stringify(body),
-        })
-          .then(res=>res.json())
-          .then(res=>{
-            if(res.status===200){
-            } else {
-              // something wrong with the DB
-            }
-          })
-      } else {
-        // still; waiting for submissions
-        console.log('still; waiting for submissions');
-      }
-    })
-
-    return () => {
-      firebase.database().ref(`currentGames/${gameId}/players`).off()
-    }
-  },[submissionsArr.length])
-
 // check that the all submissions are in
 useEffect(()=>{
   const cardsInPlayRef = firebase.database().ref(`currentGames/${gameId}/round/cardsInPlay`)
@@ -182,6 +146,48 @@ useEffect(()=>{
     }
   },[roundData.status])
 
+  const scoring = (cardsInPlay, totalNumberOfVotesCast) => {
+    if(cardsInPlay[titledCard.id].votes) {
+      if(cardsInPlay[titledCard.id].votes === totalNumberOfVotesCast){
+        //add three points to me
+        // add 3 points to each that 
+      } else {
+        // add 2 points to rest
+      }
+    } else {
+      // add 3 points to me
+    }
+  }
+
+  //listens to votes, and when all done calculates the 
+  useEffect(()=>{
+    const cardsInPlayRef = firebase.database().ref(`currentGames/${gameId}/round/cardsInPlay`)
+    cardsInPlayRef.on('value', cardsInPlaySnapshot => {
+      console.log('craigIsTheBest')
+    //   console.log('roundData.amountOfVotesCast',roundData.amountOfVotesCast)
+      console.log('cardsInPlaySnapshot.val()',cardsInPlaySnapshot.val())
+    //       if(cardsInPlaySnapshot.val()){
+    //         const totalNumberOfVotesCast = Object.values(cardsInPlaySnapshot.val()).reduce((temporarySum, card) => temporarySum + (card.votes || 0) , 0)
+    //       console.log('roundData.amountOfVotesCast',roundData.amountOfVotesCast)
+    //       console.log('totalNumberOfVotesCast',totalNumberOfVotesCast)
+    //       if(roundData.amountOfVotesCast !== totalNumberOfVotesCast) dispatch(setAmountOfVotes(totalNumberOfVotesCast))
+    //     if(roundData.status === 'voting'){
+    //       if(roundData.amountOfVotesCast === gameData.playersAmount - 1 && isMyTurn && roundData.status==='voting'){
+    //         scoring(cardsInPlaySnapshot.val(), totalNumberOfVotesCast)
+    //         console.log('votesSnapshot.val()',cardsInPlaySnapshot.val())
+    //       }  
+    //     }
+    //     }else {
+    //       dispatch(setAmountOfVotes(0))
+    //     }
+    })
+    
+    return () => {
+      const craig = firebase.database().ref(`currentGames/${gameId}/round/cardsInPlay`)
+      craig.off()
+    }
+  },[roundData.status])
+
   const clickOnCardInHand = (id, img) => {
     if (roundData.status==='submitting-titled-card' || roundData.status==='matching-card-to-title'){
       setChosenCardModalFlag(true);
@@ -192,8 +198,22 @@ useEffect(()=>{
     }
   }
 
-  const clickOnCardToVote = () => {
-
+  const clickOnCardToVote = (cardId) => {
+    if(cardId === roundData.mySubmission || isMyTurn) { // || isMyTurn
+      //error, cant vote for yourself
+    } else {
+      // fetch, put, send vote
+      fetch(`/vote/${gameId}/${cardId}`, {
+          method: "PUT",
+          headers: {
+              "Content-Type": "application/json",
+              "Accept": "application/json"
+            },
+        })
+        .catch(err=>console.log('err',err))
+      // change status to waiting for votes
+      dispatch(changeRoundStatus('waiting-for-other-votes'))
+    }
   }
 
   return (

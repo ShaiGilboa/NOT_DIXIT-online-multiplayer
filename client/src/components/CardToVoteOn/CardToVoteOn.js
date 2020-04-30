@@ -17,7 +17,7 @@ const CardToVoteOn = ({
 
   return (
     <CardWrapper
-      onClick={(event)=>onClick(id, img)}
+      onClick={(event)=>onClick(id)}
     >
       <CardImg>
         CardInHand: {img}

@@ -12,10 +12,12 @@ const initialState = {
                         - matching-card-to-title
                         - waiting-for-title
                         - voting
+                        - waiting-for-other-votes
                       */
-  turnNumber: null,
   submissionsArr: [],
   guessTheCard: [],
+  mySubmission: null,
+  amountOfVotesCast: null,
   //...
 }
 
@@ -48,10 +50,6 @@ export default function  currentUserReducer(state = initialState, action) {
         ? 'waiting-for-other-submissions'
         : 'matching-card-to-title'
       })
-    case 'SET_PLAYER_TURN':
-      return produce(state, draftState => {
-        draftState.turnNumber = action.turnNumber;
-      })
     case 'CHANGE_ROUND_STATUS':
       return produce(state, draftState => {
         draftState.status = action.newStatus;
@@ -64,7 +62,14 @@ export default function  currentUserReducer(state = initialState, action) {
       return produce(state, draftState => {
         draftState.submissionsArr = action.reShuffledSubmissions;
       })
-    
+    case 'SET_MY_SUBMISSION':
+      return produce(state, draftState => {
+        draftState.mySubmission = action.id;
+      })
+    case 'SET_AMOUNT_OF_VOTES':
+      return produce(state, draftState => {
+        draftState.amountOfVotesCast = action.newAmount;
+      })
     default:
       return state;
   }

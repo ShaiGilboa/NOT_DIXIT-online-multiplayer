@@ -3,8 +3,7 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const morgan = require('morgan');
 
-// require('dotenv').config(); // what is this?
-// console.log('hi');
+require('dotenv').config(); // what is this?
 
 const {
   signInHandler,
@@ -16,6 +15,8 @@ const {
   placeCardForRound,
   joinExistingGameHandler,
   matchCardToTitle,
+  // sendSubmissionsArrHandler,
+  votingHandler,
 } = require('./handlers');
 
 const PORT = process.env.PORT || 4000;
@@ -49,5 +50,7 @@ express()
   .post('/guess-players-card', submitGuessPlayersCard)
   .post('/place-card', placeCardForRound)
   .post('/match-card-to-title', matchCardToTitle)
+  // .post('/send-submissions-array', sendSubmissionsArrHandler)
+  .put('/vote/:gameId/:cardId', votingHandler)
 
   .listen(PORT, () => console.log(`Listening on port ${PORT}`));

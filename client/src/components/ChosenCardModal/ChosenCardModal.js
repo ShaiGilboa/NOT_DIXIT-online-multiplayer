@@ -20,12 +20,11 @@ const ChosenCardModal = ({
   setChosenCardModalFlag,
   }) => {
   const dispatch = useDispatch();
-  const {gameId} = useSelector(state=>state.gameData)
+  const {gameId, turnNumber} = useSelector(state=>state.gameData)
   const roundData = useSelector(state=>state.roundData)
   const {
     titledCard,
     isMyTurn,
-    turnNumber,
   } = roundData
   const {
     info,
