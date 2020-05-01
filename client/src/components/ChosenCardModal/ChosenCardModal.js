@@ -28,7 +28,7 @@ const ChosenCardModal = ({
   } = roundData
   const {
     info,
-  } = useSelector(state=>state.currentUserInfo)
+  } = useSelector(state=>state.currentUser)
   const [title, setTitle] = useState('')
 
   const valueChange = (event) => {
@@ -46,6 +46,7 @@ const ChosenCardModal = ({
         img: chosenCard.img,
         title,
         gameId,
+        turnNumber,
       }
       fetch('/place-card', {
         method: "POST",

@@ -38,7 +38,7 @@ const Game = () => {
   const roundData = useSelector(state=>state.roundData)
   const {submissionsArr} = roundData
   const {hand, titledCard, isMyTurn} = roundData
-  const email = useSelector(state=>state.currentUserInfo.info.email)
+  const email = useSelector(state=>state.currentUser.info.email)
 
   const [chosenTitle, setChosenTitle] = useState(false)
   const [chosenCardModalFlag, setChosenCardModalFlag] = useState(false)
@@ -146,40 +146,43 @@ useEffect(()=>{
     }
   },[roundData.status])
 
-  const scoring = (cardsInPlay, totalNumberOfVotesCast) => {
-    if(cardsInPlay[titledCard.id].votes) {
-      if(cardsInPlay[titledCard.id].votes === totalNumberOfVotesCast){
-        //add three points to me
-        // add 3 points to each that 
-      } else {
-        // add 2 points to rest
-      }
-    } else {
-      // add 3 points to me
+  const scoring = (cardsInPlay, totalVotes, gameId) => {
+    // console.log('cardsInPlay',cardsInPlay)
+    // console.log('totalVotes',totalVotes)
+    console.log('fetch')
+    const body = {
+      cardsInPlay,
+      totalVotes,
+      gameId,
+      activePlyerByTurn: gameData.turnNumber,
     }
+    fetch(`/calculate-and-give-points`, {
+      method: "PUT",
+      headers: {
+          "Content-Type": "application/json",
+          "Accept": "application/json"
+        },
+      body: JSON.stringify(body)
+    }).catch(err=>console.log('err in scoring',err))
+    const roundStatusRef = firebase.database().ref(`currentGames/${gameId}/round/status`)
+      roundStatusRef.on('value', roundStatusSnapshot => {
+        if(roundStatusSnapshot.val()==='scores')getScores(roundStatusRef)
+      })
   }
 
   //listens to votes, and when all done calculates the 
   useEffect(()=>{
     const cardsInPlayRef = firebase.database().ref(`currentGames/${gameId}/round/cardsInPlay`)
     cardsInPlayRef.on('value', cardsInPlaySnapshot => {
-      console.log('craigIsTheBest')
-    //   console.log('roundData.amountOfVotesCast',roundData.amountOfVotesCast)
-      console.log('cardsInPlaySnapshot.val()',cardsInPlaySnapshot.val())
-    //       if(cardsInPlaySnapshot.val()){
-    //         const totalNumberOfVotesCast = Object.values(cardsInPlaySnapshot.val()).reduce((temporarySum, card) => temporarySum + (card.votes || 0) , 0)
-    //       console.log('roundData.amountOfVotesCast',roundData.amountOfVotesCast)
-    //       console.log('totalNumberOfVotesCast',totalNumberOfVotesCast)
-    //       if(roundData.amountOfVotesCast !== totalNumberOfVotesCast) dispatch(setAmountOfVotes(totalNumberOfVotesCast))
-    //     if(roundData.status === 'voting'){
-    //       if(roundData.amountOfVotesCast === gameData.playersAmount - 1 && isMyTurn && roundData.status==='voting'){
-    //         scoring(cardsInPlaySnapshot.val(), totalNumberOfVotesCast)
-    //         console.log('votesSnapshot.val()',cardsInPlaySnapshot.val())
-    //       }  
-    //     }
-    //     }else {
-    //       dispatch(setAmountOfVotes(0))
-    //     }
+      if(cardsInPlaySnapshot.val()){
+        const totalNumberOfVotesCast = Object.values(cardsInPlaySnapshot.val()).reduce((temporarySum, card) => temporarySum + (card.votesByPlayerTurn ? card.votesByPlayerTurn.length : 0) , 0)
+        // console.log('totalNumberOfVotesCast',totalNumberOfVotesCast)
+        // console.log('cardsInPlaySnapshot.val()',cardsInPlaySnapshot.val())
+// just the active player would still be in 'voting', the rest will be 'waiting-for-other-votes'
+        if(totalNumberOfVotesCast === (gameData.playersAmount - 1) && roundData.status==='voting'){ 
+          scoring(cardsInPlaySnapshot.val(), totalNumberOfVotesCast, gameData.gameId)
+        }
+      }
     })
     
     return () => {
@@ -198,21 +201,37 @@ useEffect(()=>{
     }
   }
 
+  const getScores = (listenerRef) => {
+    listenerRef.off();
+    firebase.database().fer(`currentGames/${gameId}/player/${gameData.turnNumber}`).once('value', scoreSnapshot => {
+      console.log('scoreSnapshot.val()',scoreSnapshot.val())
+    })
+  }
+
   const clickOnCardToVote = (cardId) => {
-    if(cardId === roundData.mySubmission || isMyTurn) { // || isMyTurn
+    if(cardId === roundData.mySubmission || isMyTurn) {
       //error, cant vote for yourself
-    } else {
+    } else if(roundData.status === 'voting'){
       // fetch, put, send vote
-      fetch(`/vote/${gameId}/${cardId}`, {
+      const body = {
+        cardId,
+        playerVoting: gameData.turnNumber,
+      }
+      fetch(`/vote/${gameId}`, {
           method: "PUT",
           headers: {
               "Content-Type": "application/json",
               "Accept": "application/json"
             },
+          body: JSON.stringify(body),
         })
         .catch(err=>console.log('err',err))
       // change status to waiting for votes
       dispatch(changeRoundStatus('waiting-for-other-votes'))
+      const roundStatusRef = firebase.database().ref(`currentGames/${gameId}/round/status`)
+      roundStatusRef.on('value', roundStatusSnapshot => {
+        if(roundStatusSnapshot.val()==='scores')getScores(roundStatusRef)
+      })
     }
   }
 
@@ -225,7 +244,7 @@ useEffect(()=>{
       {titledCard.title && (<AllPlayedCards/>)}
       <p>isMyTurn: {`${isMyTurn}`}</p>
       {roundData.status === 'waiting-for-other-submissions' && <div>waiting-for-other-submissions</div>}
-      {roundData.status === 'voting' && (
+      {(roundData.status === 'voting' || roundData.status === 'waiting-for-other-votes') && (
         <VotingWrapper>
           {roundData.submissionsArr.map(card=><CardToVoteOn
           key={card.id}

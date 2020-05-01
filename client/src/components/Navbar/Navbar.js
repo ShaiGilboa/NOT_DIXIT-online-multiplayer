@@ -23,20 +23,20 @@ const Navbar = () => {
 
   const gameData = useSelector(state=>state.gameData)
   const roundData = useSelector(state=>state.roundData)
-  const currentUserInfo = useSelector(state=>state.currentUserInfo)
+  const currentUser = useSelector(state=>state.currentUser)
   const history = useHistory();
   // let initials;
 
   const getInitial = () =>{
-    const name = currentUserInfo.info.displayName
+    const name = currentUser.info.displayName
     const nameArr = name.split(' ');
     const initials = nameArr.map(string=>string.charAt(0).toUpperCase()).join(' ')
     return initials
   }
 
   useEffect(()=>{
-    if(!currentUserInfo.info.email)history.push('/')
-  },[currentUserInfo])
+    if(!currentUser.info.email)history.push('/')
+  },[currentUser])
 
   return (
     <Wrapper>
@@ -45,13 +45,13 @@ const Navbar = () => {
       {gameData.gameId ? <div>your game id: {gameData.gameId}</div>: null}
       
       <UserInfoBox>
-        {currentUserInfo.info.email 
+        {currentUser.info.email 
           ? (<>
             <button
               onClick={()=>handleSignOut()}
             >Sign Out</button>
-            {currentUserInfo.info.photoURL 
-              ? <UserAvatar src={currentUserInfo.info.photoURL} />
+            {currentUser.info.photoURL 
+              ? <UserAvatar src={currentUser.info.photoURL} />
               : <Initials><p>{getInitial()}</p></Initials>}
           </>)
           : (<>

@@ -23,22 +23,23 @@ import {
 const Homepage = () => {
   const history = useHistory();
   const dispatch = useDispatch();
-  const currentUserInfo = useSelector(state=>state.currentUserInfo)
+  const currentUser = useSelector(state=>state.currentUser)
 
   const [gameId, setGameId] = useState('')
 
-  const changeStatusToPlaying = (gameId, hand) =>{
-    dispatch(newGameId(gameId));// and status = 'playing'
-    dispatch(setNewHand(hand));// and status = 'playing'
-    dispatch(changeCurrentUserStatus('playing'))
+  const waitingToStart = (gameId, hand) =>{
+    dispatch(newGameId(gameId));// and game status = 'waiting-to-start'
+    dispatch(setNewHand(hand));// and round status = 'playing'
+    // dispatch(changeCurrentUserStatus('playing'))
+    // history.push('/waiting') // waiting room
     history.push('/game')
   }
 
   const startNewGame = () => {
     dispatch(changeCurrentUserStatus('creating-game'))
     const body= {
-      creatorEmail: currentUserInfo.info.email,
-      displayName: currentUserInfo.info.displayName,
+      creatorEmail: currentUser.info.email,
+      displayName: currentUser.info.displayName,
     }
     fetch('/start-new-game', {
       method: 'POST',
@@ -51,8 +52,9 @@ const Homepage = () => {
       .then(res=>res.json())
       .then(res=>{
         if(res.status===200) {
-          changeStatusToPlaying(res.gameId, res.hand);
-          dispatch(setPlayerTurn(1))
+          console.log('res',res)
+          dispatch(setPlayerTurn(0))
+          waitingToStart(res.gameId, res.hand);
         }
       })
   }
@@ -60,9 +62,10 @@ const Homepage = () => {
   const joinExistingGame = (event) => {
     event.preventDefault();
     dispatch(changeCurrentUserStatus('joining-game'))
+    //TODO: convert Id to XXX-XXXX-XXX
     const body = {
-      userEmail: currentUserInfo.info.email,
-      displayName: currentUserInfo.info.displayName,
+      email: currentUser.info.email,
+      displayName: currentUser.info.displayName,
       gameId,
     }
     fetch('/join-existing-game', {
@@ -76,19 +79,19 @@ const Homepage = () => {
     .then(res=>res.json())
     .then(res=>{
       if(res.status===200) {
-        changeStatusToPlaying(res.gameId, res.hand);
-          dispatch(setPlayerTurn(res.turnNumber))
+        dispatch(setPlayerTurn(res.turnNumber))
+        waitingToStart(res.gameId, res.hand);
       }
     })
   }
 
   useEffect(()=>{
-    // if(currentUserInfo.status==='logged-in')history.push('/game')
-  },[currentUserInfo])
+    // if(currentUser.status==='logged-in')history.push('/game')
+  },[currentUser])
   return (
     <Wrapper>
       <div>Homepage</div>
-      {currentUserInfo.status==='logged-in'
+      {currentUser.status==='logged-in'
         ? (<>
           <button
             onClick={()=>startNewGame()}

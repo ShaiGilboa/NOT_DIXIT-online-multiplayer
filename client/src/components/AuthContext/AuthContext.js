@@ -37,7 +37,7 @@ const AuthProvider = ({
   const [appUser, setAppUser] = useState({})
 
   const dispatch = useDispatch();
-  const currentUser = useSelector(state=>state.currentUserInfo);
+  const currentUser = useSelector(state=>state.currentUser);
 
   const handleSignOut= () => {
     signOut();

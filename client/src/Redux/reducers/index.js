@@ -6,7 +6,7 @@ import authReducer from './auth-reducer';
 import roundReducer from './round-reducer';
 
 export default combineReducers({
-  currentUserInfo: currentUserReducer,
+  currentUser: currentUserReducer,
   gameData: gameReducer,
   auth: authReducer,
   roundData: roundReducer,

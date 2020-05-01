@@ -5,10 +5,13 @@ const initialState = {
   gameStatus: 'waiting', /* - waiting
                             - error
                             - playing
+                            - creating-game
+                            - waiting-to-start
                         */
   gameId: null,
   playersAmount: null,
   turnNumber: null,
+  score: null,
 }
 
 export default function  currentUserReducer(state = initialState, action) {
@@ -16,7 +19,7 @@ export default function  currentUserReducer(state = initialState, action) {
     case 'NEW_GAME_ID':
       return produce(state, draftState => {
         draftState.gameId = action.gameId;
-        draftState.status = 'playing'
+        draftState.status = 'waiting-to-start'
       })
     case 'GAME_SIGN_OUT':
       return produce(state, draftState => {

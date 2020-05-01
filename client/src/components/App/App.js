@@ -22,6 +22,7 @@ import GlobalStyles from '../GlobalStyles';
 import Navbar from '../Navbar';
 import Homepage from '../../pages/Homepage';
 import Game from '../../pages/Game';
+import WaitingForOtherUsers from '../../pages/WaitingForOtherUsers';
 
 const App = () => {
   // const {
@@ -42,6 +43,9 @@ const App = () => {
         </Route>
         <Route path='/game' >
           <Game />
+        </Route>
+        <Route path='/waiting' >
+          <WaitingForOtherUsers />
         </Route>
       </Switch>
     </Router>
