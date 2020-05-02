@@ -14,7 +14,10 @@ const {
   getNewDeck,
   getPlayersSnapshot,
   drawOneCardFromDeckFirebase,
-  nextRoundFirebase,
+  updateRoundStatus,
+  setPlayerStatus,
+  changeActivePlayer,
+  resetRound,
 } = require('./helpers/firebaseHandlers');
 
 const {
@@ -119,8 +122,6 @@ const matchCardToTitle = async (req, res) => {
 const votingHandler = async (req, res) =>{
   const {gameId} = req.params
   const {cardId, playerVoting} = req.body
-  console.log('cardId',cardId)
-  console.log('playerVoting',playerVoting)
   try {
     await sendVoteToDB(gameId, cardId, playerVoting)
   } catch (err) {
@@ -163,6 +164,7 @@ const scoringHandler = async (req, res) => {
     }
     players.forEach(player=>player.status = 'scores')
     await updateScoresInDB(gameId, players)
+    await updateRoundStatus(gameId, 'scores')
       res.status(204).send()
   } catch (err) {
     console.log('err',err)
@@ -174,6 +176,7 @@ const scoringHandler = async (req, res) => {
 // does: changes activePlayer, and currentRound, 
 // returns: {roundId, card title chosen}
 const roundStartHandler = async (req, res) => {
+  const {gameId} = req.body
   try {
     const newCard = await drawOneCardFromDeckFirebase(gameId);
     await nextRoundFirebase()
@@ -182,11 +185,37 @@ const roundStartHandler = async (req, res) => {
   }
 }
 
-// -- draws one card from deck, sets playerStatus = 'waiting'
+// -- draws one card from deck, sets playerStatus = 'ready'
 // post: req.body{gameId, playerTurn}
 // returns: one new card
-const drawCardHandler = async (req, res) => {
-  
+const roundPrepHandler = async (req, res) => {
+  const {gameId, playerTurn} = req.body;
+  try {
+    const newCard = await drawOneCardFromDeckFirebase(gameId);
+    await setPlayerStatus(gameId, playerTurn, 'ready')
+    res.status(200).json({
+      status: 200,
+      card: newCard,
+    })
+  } catch (err) {
+    console.log('err',err)
+  }
+}
+
+// -- changes the active player, clears previous round information
+//    changes statuses
+// put: {gameId} req.body
+const startNextRoundHandler = async (req, res) => {
+  const {gameId} = req.body;
+  try {
+    await changeActivePlayer(gameId)
+    await resetRound(gameId)
+    // await db.ref(`currentGames/${gameId}`).update({
+    //   status: 'playing'
+    // })
+  } catch (err) {
+    console.log('err',err)
+  }
 }
 
 module.exports = {
@@ -199,5 +228,6 @@ module.exports = {
   matchCardToTitle,
   votingHandler,
   scoringHandler,
-  drawCardHandler,
+  roundPrepHandler,
+  startNextRoundHandler,
 }

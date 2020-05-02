@@ -80,12 +80,12 @@ export const setAmountOfVotes = (newAmount) => ({
   newAmount,
 })
 
-export const madeSubmission = (id) => ({
-  type: 'MADE_SUBMISSION',
-  id
-})
-
 export const setGameStatus = (newStatus) => ({
   type: 'SET_GAME_STATUS',
   newStatus,
+})
+
+export const addCardToHand = (card) => ({
+  type: 'ADD_CARD_TO_HAND',
+  card
 })

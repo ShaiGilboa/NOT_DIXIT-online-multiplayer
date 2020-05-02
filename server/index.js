@@ -16,6 +16,8 @@ const {
   votingHandler,
   scoringHandler,
   drawCardHandler,
+  roundPrepHandler,
+  startNextRoundHandler,
 } = require('./handlers');
 
 const PORT = process.env.PORT || 4000;
@@ -43,11 +45,11 @@ express()
   .put('/sign-out', signOutHandler)
   .post('/start-new-game', startNewGameHandler)
   .post('/join-existing-game', joinExistingGameHandler)
-  .put('/round-start', roundStartHandler)
+  .post('/prep-for-next-round', roundPrepHandler)
   .post('/place-card', placeCardForRound)
   .post('/match-card-to-title', matchCardToTitle)
   .put('/vote/:gameId', votingHandler)
   .put('/calculate-and-give-points', scoringHandler)
-  .post('/dra-new-card', drawCardHandler)
+  .put('/start-next-round', startNextRoundHandler)
 
   .listen(PORT, () => console.log(`Listening on port ${PORT}`));

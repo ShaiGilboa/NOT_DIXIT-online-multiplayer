@@ -8,9 +8,10 @@ const initialState = {
                         - creating-game
                         - waiting-to-start
                         - end-of-round
+                        - starting-new-round
                       */
   gameId: null,
-  playersAmount: null,
+  // playersAmount: null,
   turnNumber: null,
   score: 0,
   currentRound: 0,
@@ -31,10 +32,10 @@ export default function  currentUserReducer(state = initialState, action) {
         draftState.gameId = null;
         draftState.isMyTurn = false;
       })
-    case 'SET_PLAYERS_AMOUNT':
-      return produce(state, draftState => {
-        draftState.playersAmount = action.newAmount;
-      })
+    // case 'SET_PLAYERS_AMOUNT':
+    //   return produce(state, draftState => {
+    //     draftState.playersAmount = action.newAmount;
+    //   })
     case 'SET_PLAYER_TURN':
       return produce(state, draftState => {
         draftState.turnNumber = action.turnNumber;

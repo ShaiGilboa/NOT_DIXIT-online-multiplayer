@@ -20,8 +20,6 @@ const WaitingForOtherUsers = () => {
   useEffect(()=>{
     const playersLoggedOnRef = firebase.database().ref(`/currentGames/${gameId}/players`)
     playersLoggedOnRef.on('child_added', playersSnapshot => {
-      console.log('playersSnapshot.val()',playersSnapshot.val())
-      console.log('playersLoggedOn insdide',playersLoggedOn)
       if(!playersLoggedOn.some(player=>player.email===playersSnapshot.val().email))setPlayersLoggedOn(playersLoggedOn.concat(playersSnapshot.val()))
     })
 
@@ -30,7 +28,6 @@ const WaitingForOtherUsers = () => {
       playersLoggedOnRef.off()
     }
   },[playersLoggedOn])
-  console.log('playersLoggedOn outside',playersLoggedOn)
   return (
     <Wrapper>
       <div>Friends that want to play with you:</div>

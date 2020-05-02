@@ -18,8 +18,8 @@ const randFromArr = (amount, arr) => {
 }
 
 const getHandFromDeck = (deck) => {
-  const options = deck.filter(card=>card.isAvailable)
-  const hand = randFromArr(7, options);
+  const availableCards = deck.filter(card=>card.isAvailable)
+  const hand = randFromArr(7, availableCards);
   hand.forEach(cardInHand => {
     cardInHand.isAvailable = false
   })
@@ -61,7 +61,12 @@ const newId = () => {
   return Date.now()
 }
 
-
+const getOneCardFromDeck = (deck) => {
+  const availableCards = deck.filter(card=>card.isAvailable)
+  const card = randFromArr(1, availableCards)
+  card[0].isAvailable = false;
+  return card[0];
+}
 
 module.exports = {
   newId,
@@ -72,4 +77,5 @@ module.exports = {
   getHandFromDeck,
   randFromArr,
   randInRange,
+  getOneCardFromDeck,
 }

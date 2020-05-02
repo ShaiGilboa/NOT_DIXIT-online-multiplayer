@@ -7,6 +7,7 @@ const {
   getHandFromDeck,
   randFromArr,
   randInRange,
+  getOneCardFromDeck,
 } = require('./utils');
 
 const getUser = async (email) => {
@@ -31,6 +32,26 @@ const queryDB = async (key) => {
     }
   )
   return data;
+}
+
+const getNewHand = async (gameRef) => {
+  let hand =null;
+  try {//get he state state of the gameDeck
+    await gameRef.child('gameDeck').once('value', snapshot => {
+      hand = getHandFromDeck(snapshot.val())
+    })
+    // update deck
+    await hand.forEach(cardInHand=> {
+      gameRef.child('gameDeck').orderByKey().equalTo(`${cardInHand.id}`).once('child_added', snapshot => {
+        snapshot.ref.update({
+          isAvailable:false
+        })
+      })
+    })
+    return hand;
+  } catch (err) {
+    console.log('err',err)
+  }
 }
 
 //---------------------------
@@ -143,7 +164,7 @@ const createNewGameOnFirebase = async (creatorEmail, displayName, newGameDeck) =
     const newGameId = getNewGameIdBasedOnDate() ///Date.now() % 1000000000
     await gamesRef.child(`${newGameId}`).set({
       creatorEmail,
-      gameStatus: 'playing',
+      status: 'playing',
       gameDeck: newGameDeck,
       isOpen:true,
       currentRound: 1,
@@ -193,19 +214,7 @@ const joinFirebaseGame = async (email, displayName, gameId) => {
         status: 'playing',
       })
     })
-    let hand = null;
-    await gameRef.child('gameDeck').once('value', snapshot => {
-      hand = getHandFromDeck(snapshot.val())
-    })
-    // update deck
-    await hand.forEach(cardInHand=> {
-      gameRef.child('gameDeck').orderByKey().equalTo(`${cardInHand.id}`).once('child_added', snapshot => {
-        snapshot.ref.update({
-          isAvailable:false
-        })
-      })
-    })
-    console.log('turnNumber',turnNumber)
+    let hand = await getNewHand(gameRef);
     return {hand, turnNumber};
   } catch (err) {
     console.log('err',err)
@@ -295,7 +304,7 @@ const updateScoresInDB = async (gameId, players) => {
       players
     })
     db.ref(`currentGames/${gameId}`).update({
-      gameStatus: 'scores'
+      status: 'scores'
     })
   } catch (err) {
     console.log('err',err)
@@ -322,11 +331,79 @@ const getPlayersSnapshot = async (gameId) => {
 }
 
 const drawOneCardFromDeckFirebase = async (gameId) => {
-
+  try {
+    const gameDeckSnapshot = await db.ref(`currentGames/${gameId}/gameDeck`).once('value')
+    const gameDeck =gameDeckSnapshot.val()
+    const card = await getOneCardFromDeck(gameDeck)
+    await db.ref(`currentGames/${gameId}/gameDeck/${card.id}`).update({
+      isAvailable: false,
+    })
+    await db.ref(`currentGames/${gameId}/round`).update({
+      status: 'starting-new-round'
+    })
+    return card;
+  } catch (err) {
+    console.log('err',err)
+  }
 }
 
-const nextRoundFirebase = async (gameId) => {
-  
+const updateRoundStatus = async (gameId, newStatus) => {
+  try {
+    const roundRef = await db.ref(`currentGames/${gameId}/round`);
+    await roundRef.update({
+      status: newStatus
+    })
+  } catch (err) {
+    console.log('err',err)
+  }
+}
+
+const setPlayerStatus = async (gameId, playerTurn, newStatus) => {
+  try {
+    const playerRef = await db.ref(`currentGames/${gameId}/players/${playerTurn}`);
+    playerRef.update({
+      status: newStatus
+    })
+  } catch (err) {
+    console.log('err',err)
+  }
+}
+
+const changeActivePlayer = async (gameId) => {
+  try {
+    const currentActivePlayerRef = await db.ref(`currentGames/${gameId}/round/activePlayer`).once('value')
+    // console.log('currentActivePlayerRef',currentActivePlayerRef)
+    const currentActivePlayer = currentActivePlayerRef.val();
+    db.ref(`currentGames/${gameId}/players`).once('value', playersSnapshot => {
+      let newActivePlayer = 0;
+      if (currentActivePlayer === (playersSnapshot.numChildren() - 1)) {
+        db.ref(`currentGames/${gameId}/round`).update({
+          activePlayer: newActivePlayer,
+        })
+      } else {
+        db.ref(`currentGames/${gameId}/round`).update({
+          activePlayer: currentActivePlayer + 1,
+        })
+      }
+    })
+  } catch (err) {
+    console.log('err',err)
+  }
+}
+
+const resetRound = async (gameId) => {
+  try {
+    const pastCardsInPlayRef = await db.ref(`currentGames/${gameId}/round/cardsInPlay`)
+    pastCardsInPlayRef.remove()
+    const roundCounterRef = await db.ref(`currentGames/${gameId}/round/currentRound`)
+    const roundCounter = roundCounterRef.val()
+    db.ref(`currentGames/${gameId}/round`).update({
+      status: 'playing',
+      currentRound: roundCounter + 1,
+    })
+  } catch (err) {
+    console.log('err',err)
+  }
 }
 
 module.exports = {
@@ -343,5 +420,8 @@ module.exports = {
   getNewDeck,
   getPlayersSnapshot,
   drawOneCardFromDeckFirebase,
-  nextRoundFirebase,
+  updateRoundStatus,
+  setPlayerStatus,
+  changeActivePlayer,
+  resetRound,
 }

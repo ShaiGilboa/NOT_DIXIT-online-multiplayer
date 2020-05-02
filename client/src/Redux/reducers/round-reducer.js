@@ -37,7 +37,6 @@ export default function  currentUserReducer(state = initialState, action) {
           ...state.hand.find(card=> card.id === action.chosenCardId),
           title: action.title,
         }
-        draftState.hand = state.hand.filter(card => card.id !== action.chosenCardId);
       })
     case 'SET_IS_MY_TURN':
       return produce(state, draftState => {
@@ -68,14 +67,15 @@ export default function  currentUserReducer(state = initialState, action) {
     case 'SET_MY_SUBMISSION':
       return produce(state, draftState => {
         draftState.mySubmission = action.id;
+        draftState.hand = state.hand.filter(card => card.id !== action.id);
       })
     case 'SET_AMOUNT_OF_VOTES':
       return produce(state, draftState => {
         draftState.amountOfVotesCast = action.newAmount;
       })
-    case 'MADE_SUBMISSION':
+    case 'ADD_CARD_TO_HAND':
       return produce(state, draftState => {
-        draftState.mySubmission = action.id;
+        draftState.hand.unshift(action.card);
       })
     default:
       return state;

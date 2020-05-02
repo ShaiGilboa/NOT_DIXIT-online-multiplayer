@@ -24,8 +24,9 @@ import {
   reShuffleSubmissions,
   setPlayersAmount,
   setAmountOfVotes,
-  madeSubmission,
+  setMySubmission,
   setGameStatus,
+  addCardToHand,
 } from '../../Redux/actions';
 
 import CardInHand from '../../components/CardInHand';
@@ -62,17 +63,13 @@ const Game = () => {
       const playersRef = firebase.database().ref(`currentGames/${gameId}/players`)
       playersRef.on('value', playersSnapshot => {
         if(playersSnapshot.val())if(stateDifferentThenDB(players, playersSnapshot.val()))setPlayers(playersSnapshot.val())
-        const amountOfPlayersLoggedOn = playersSnapshot.numChildren();
-        if(amountOfPlayersLoggedOn !== gameData.playersAmount){
-          dispatch(setPlayersAmount(amountOfPlayersLoggedOn))
-        }
       })
 
       return ()=>{
         const playersRef = firebase.database().ref(`currentGames/${gameId}/players`)
         playersRef.off()
       }
-  },[gameData.playersAmount])
+  },[gameData.status])
 
   // checks when it is 'myTurn'
   useEffect(()=> {
@@ -108,18 +105,19 @@ const Game = () => {
   },[roundData.status])
 
 // check that the all submissions are in
-useEffect(()=>{
-  const cardsInPlayRef = firebase.database().ref(`currentGames/${gameId}/round/cardsInPlay`)
-  cardsInPlayRef.on('value', cardsInPlaySnapshot => {
-    const amountOfCardsInPlay = cardsInPlaySnapshot.numChildren()
-    if(amountOfCardsInPlay === gameData.playersAmount){
-      if(amountOfCardsInPlay>0 && roundData.status==='waiting-for-other-submissions') {
-        const cardsInPlayArr = Object.values(cardsInPlaySnapshot.val())
-        const newSubmissionsArr = reshuffleArr(cardsInPlayArr)
-        dispatch(reShuffleSubmissions(newSubmissionsArr));
-        dispatch(changeRoundStatus('voting'))
+  useEffect(()=>{
+    const cardsInPlayRef = firebase.database().ref(`currentGames/${gameId}/round/cardsInPlay`)
+    cardsInPlayRef.on('value', cardsInPlaySnapshot => {
+      const amountOfCardsInPlay = cardsInPlaySnapshot.numChildren()
+      // players.length === amount of players in the game
+      if(amountOfCardsInPlay === players.length){
+        if(amountOfCardsInPlay>0 && roundData.status==='waiting-for-other-submissions') {
+          const cardsInPlayArr = Object.values(cardsInPlaySnapshot.val())
+          const newSubmissionsArr = reshuffleArr(cardsInPlayArr)
+          dispatch(reShuffleSubmissions(newSubmissionsArr));
+          dispatch(changeRoundStatus('voting'))
+        }
       }
-    }
   })
   
   return ()=>{
@@ -131,21 +129,24 @@ useEffect(()=>{
 // check if a submission was made and push it into the submission array
 // the submission array exist in the activePlayer state exclusively
   useEffect(()=>{
-    const currentRoundRef = firebase.database().ref(`currentGames/${gameId}/round`)
-    currentRoundRef.child('submissionsByPlayerTurnNumber').on('child_added', submissionsSnapshot => {
-      const newSubmission = submissionsSnapshot.val()
-      if(!submissionsArr.some(submission=>submission.id===newSubmission.id)&&roundData.isMyTurn)dispatch(addSubmissionToSubmissionsArr(newSubmission))
+    const currentRoundRef = firebase.database().ref(`currentGames/${gameId}/round/cardsInPlay`)
+    currentRoundRef.on('child_added', submissionsSnapshot => {
+      if(submissionsSnapshot.val().status === 'submission'){
+        const newSubmission = submissionsSnapshot.val()
+        const some = submissionsArr.some(submission=>submission.id===newSubmission.id)
+        if(!some && roundData.isMyTurn)dispatch(addSubmissionToSubmissionsArr(newSubmission))
+      }
     })
 
     return () => {
       // this is where we need to turn off the connection. It's always good to clean up after oursleves.
-      const currentRoundRef = firebase.database().ref(`currentGames/${gameId}/round`)
-      currentRoundRef.child('submissionsByPlayerTurnNumber').off()
+    const currentRoundRef = firebase.database().ref(`currentGames/${gameId}/round/cardsInPlay`)
+      currentRoundRef.off()
     }
   },[roundData.status])
 
   const scoring = (cardsInPlay, totalVotes, gameId) => {
-    console.log('fetch')
+    console.log('fetch - scoring')
     const body = {
       cardsInPlay,
       totalVotes,
@@ -174,7 +175,7 @@ useEffect(()=>{
       const roundStatusRef = firebase.database().ref(`currentGames/${gameId}/round/status`)
       roundStatusRef.off()
     }
-  },[gameData.status])
+  },[roundData.status])
 
   //listens to votes, and when all done calculates the 
   useEffect(()=>{
@@ -183,7 +184,7 @@ useEffect(()=>{
       if(cardsInPlaySnapshot.val()){
         const totalNumberOfVotesCast = Object.values(cardsInPlaySnapshot.val()).reduce((temporarySum, card) => temporarySum + (card.votesByPlayerTurn ? card.votesByPlayerTurn.length : 0) , 0)
         // just the active player would still be in 'voting', the rest will be 'waiting-for-other-votes'
-        if(totalNumberOfVotesCast === (gameData.playersAmount - 1) && roundData.status==='voting'){ 
+        if(totalNumberOfVotesCast === (players.length - 1) && roundData.status==='voting'){ 
           scoring(cardsInPlaySnapshot.val(), totalNumberOfVotesCast, gameData.gameId)
         }
       }
@@ -195,60 +196,74 @@ useEffect(()=>{
     }
   },[roundData.status])
 
-  // listens to playersStatus, if all 'ready' changes this.currentRound
-  // only the leaving activePlayer is still in 'voting'
+  // checks that all players are ready for next round, once ready
+  // only the activePlayer is changing the activePlayer to the next one
   useEffect(()=>{
     const playersRef = firebase.database().ref(`currentGames/${gameId}/players`)
     playersRef.on('value', playersSnapshot => {
-      console.log('players status listener')
-      console.log('playersSnapshot.val()',playersSnapshot.val())
-      console.log('roundData.status',roundData.status)
-      // if(roundData.status==='voting'){
-      //   // change currentRound, change activePlayer
-      //   fetch('/round-start', {
-      //   method: "PUT",
-      //   headers: {
-      //       "Content-Type": "application/json",
-      //       "Accept": "application/json"
-      //     },
-      //   })
-      //   .catch(err=>console.log('err - creating new round',err))
-      // }
+      let amountOfReadyPlayers = 0;
+      playersSnapshot.val().forEach(player=>{
+        if(player.status==='ready')amountOfReadyPlayers++;
+      })
+      // if all are ready, we can start next round
+      if (isMyTurn && (amountOfReadyPlayers === playersSnapshot.val().length)) {
+        const body = {
+          gameId
+        }
+        fetch('/start-next-round', {
+          method: "PUT",
+          headers: {
+          "Content-Type": "application/json",
+          "Accept": "application/json"
+          },
+          body: JSON.stringify(body)
+        })
+        .catch(err=>console.log('err in starting next round',err))
+      }
     })
-    return () => {
+
+    return () =>{
       const playersRef = firebase.database().ref(`currentGames/${gameId}/players`)
-      playersRef.orderByChild('status').equalTo('scores').off()
+      playersRef.off()
     }
   },[gameData.status])
 
-  const clickOnCardInHand = (id, img) => {
-    if (roundData.status==='submitting-titled-card' || roundData.status==='matching-card-to-title'){
-      // log my submission
-      dispatch(madeSubmission(id))
-      setChosenCardModalFlag(true);
-      setChosenCard({
-        id,
-        img,
-      });
-    }
-  }
-
-  const nextRound = () => {
-    
+  const nextPrepRound = () => {
     // all player need to draw a new card
     dispatch(changeRoundStatus('starting-new-round'))
     const body = {
-      gameId
+      gameId,
+      playerTurn: gameData.turnNumber,
     }
-    fetch('/round-start', {
-      method: "PUT",
+    // changes player status to 'ready', and returns a new card
+    fetch('/prep-for-next-round', {
+      method: "POST",
       headers: {
           "Content-Type": "application/json",
           "Accept": "application/json"
         },
       body: JSON.stringify(body)
     })
+      .then(res=>res.json())
+      .then(res=>{
+        if(res.status===200){
+          dispatch(addCardToHand(res.card))
+          dispatch(setGameStatus('starting-new-round'))
+        }
+      })
       .catch(err=>console.log('err - creating new round',err))
+  }
+
+  const clickOnCardInHand = (id, img) => {
+    if (roundData.status==='submitting-titled-card' || roundData.status==='matching-card-to-title'){
+      // log my submission
+      dispatch(setMySubmission(id))
+      setChosenCardModalFlag(true);
+      setChosenCard({
+        id,
+        img,
+      });
+    }
   }
 
   const clickOnCardToVote = (cardId) => {
@@ -297,7 +312,7 @@ useEffect(()=>{
         </VotingWrapper>
         )}
       {gameData.status==='end-of-round' && <button
-          onClick={()=>nextRound()}
+          onClick={()=>nextPrepRound()}
         >continue?</button>}
       <CardsInHand>
         {hand.length && hand.map((card, index)=><CardInHand
