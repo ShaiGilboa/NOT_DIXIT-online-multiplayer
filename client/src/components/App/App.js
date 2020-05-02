@@ -25,12 +25,6 @@ import Game from '../../pages/Game';
 import WaitingForOtherUsers from '../../pages/WaitingForOtherUsers';
 
 const App = () => {
-  // const {
-  //   appUser,
-  //   signInWithGoogle,
-  //   handleSignOut,
-  //   } = useContext(AuthContext);
-  
   return (
     <Router>
       {/*global components*/}

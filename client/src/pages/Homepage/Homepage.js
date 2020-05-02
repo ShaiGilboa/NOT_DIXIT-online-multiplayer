@@ -79,6 +79,7 @@ const Homepage = () => {
     .then(res=>res.json())
     .then(res=>{
       if(res.status===200) {
+        console.log('res.turnNumber',res.turnNumber)
         dispatch(setPlayerTurn(res.turnNumber))
         waitingToStart(res.gameId, res.hand);
       }

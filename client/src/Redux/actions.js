@@ -79,3 +79,13 @@ export const setAmountOfVotes = (newAmount) => ({
   type: 'SET_AMOUNT_OF_VOTES',
   newAmount,
 })
+
+export const madeSubmission = (id) => ({
+  type: 'MADE_SUBMISSION',
+  id
+})
+
+export const setGameStatus = (newStatus) => ({
+  type: 'SET_GAME_STATUS',
+  newStatus,
+})

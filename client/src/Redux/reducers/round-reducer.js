@@ -13,6 +13,9 @@ const initialState = {
                         - waiting-for-title
                         - voting
                         - waiting-for-other-votes
+                        - scores
+                        - submitting
+                        - starting-new-round
                       */
   submissionsArr: [],
   guessTheCard: [],
@@ -69,6 +72,10 @@ export default function  currentUserReducer(state = initialState, action) {
     case 'SET_AMOUNT_OF_VOTES':
       return produce(state, draftState => {
         draftState.amountOfVotesCast = action.newAmount;
+      })
+    case 'MADE_SUBMISSION':
+      return produce(state, draftState => {
+        draftState.mySubmission = action.id;
       })
     default:
       return state;

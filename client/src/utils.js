@@ -37,3 +37,19 @@ export const reshuffleArr = (arr) => {
   }
   return reshuffledArr
 }
+
+export const stateDifferentThenDB = (state, db) => {
+  if(state.length!==db.length)return true
+  // for each player
+  for(let playerTurn=0; playerTurn<state.length; playerTurn++){
+    let statePlayerKeys = Object.keys(state[playerTurn])
+    let dbPlayerKeys = Object.keys(db[playerTurn])
+    if (statePlayerKeys.length !== dbPlayerKeys.length)return true;
+    // check all keys in state and db
+    for(let stateKey of statePlayerKeys) {
+      if(state[playerTurn][stateKey] !== db[playerTurn][stateKey]) return true
+    }
+  }
+  return false
+}
+
