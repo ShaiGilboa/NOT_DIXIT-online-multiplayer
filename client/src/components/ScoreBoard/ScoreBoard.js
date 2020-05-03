@@ -4,7 +4,7 @@ import React, {
 } from 'react';
 import styled from 'styled-components';
 
-const ScoreBoard = ({players}) => {
+const ScoreBoard = ({players, votingMessage}) => {
 
   return (
     <Wrapper>
@@ -14,6 +14,11 @@ const ScoreBoard = ({players}) => {
           <p>{player.displayName}: {player.score} points</p>
         </div>
       ))}
+      {votingMessage.length>0 && votingMessage.map((message, index) => (
+        <div key={index}>
+          <p>{message}</p>
+        </div>
+        ))}
     </Wrapper>
     );
 }

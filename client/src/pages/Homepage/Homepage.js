@@ -40,6 +40,7 @@ const Homepage = () => {
     const body= {
       creatorEmail: currentUser.info.email,
       displayName: currentUser.info.displayName,
+      id: currentUser.info.id,
     }
     fetch('/start-new-game', {
       method: 'POST',
@@ -66,6 +67,7 @@ const Homepage = () => {
       email: currentUser.info.email,
       displayName: currentUser.info.displayName,
       gameId: parseInt(gameId),
+      id: currentUser.info.id,
     }
     fetch('/join-existing-game', {
       method: 'POST',

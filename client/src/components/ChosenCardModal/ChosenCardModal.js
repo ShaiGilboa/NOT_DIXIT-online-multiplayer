@@ -15,6 +15,8 @@ import {
   useDispatch,
 } from 'react-redux';
 
+import RNDable from '../RNDable';
+
 const ChosenCardModal = ({
   chosenCard,
   setChosenCardModalFlag,
@@ -111,7 +113,13 @@ const ChosenCardModal = ({
   return (
     <Wrapper
       onClick={()=>setChosenCardModalFlag(false)}
-    >
+    > 
+      <RNDable 
+        initialWidth={400}
+        initialHeight={400}
+        initialTop={1}
+        initialLeft={100}
+      >
       <ChosenCardModalContainer
         onSubmit={cardChosen}
         onClick={(event)=>event.stopPropagation()}
@@ -133,6 +141,7 @@ const ChosenCardModal = ({
           </div>
         </Info>
       </ChosenCardModalContainer>
+      </RNDable>
     </Wrapper>
     );
 }

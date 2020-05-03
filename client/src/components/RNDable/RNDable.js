@@ -139,15 +139,6 @@ const RNDable = ({
     document.removeEventListener('mousemove', dragMoveHandler)
   }
 
-  // useEffect(()=>{
-  //   document.addEventListener('mouseup',mouseupHandler)
-
-  //   return ()=>  document.removeEventListener('mouseup',mouseupHandler)
-  // },[])
-
-
-  // document.addEventListener('mouseup',mouseupHandler)
-
   return (
       <Div
         style={{width: `${width}px`, height: `${height}px`,top: `${top}px`, left: `${left}px`}}
@@ -182,6 +173,7 @@ const Drag = styled.div`
   position: absolute;
   bottom:0px;
   right:0px;
+  z-index:100;
 `;
 
 const Div = styled.div`

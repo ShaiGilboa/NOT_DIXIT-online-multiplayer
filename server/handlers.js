@@ -3,7 +3,6 @@
 const {
   updateScoresInDB,
   sendVoteToDB,
-  setSubmissionsArrInFirebaseDB,
   matchCardToTitleFirebaseDB,
   placeCardInFirebaseDB,
   joinFirebaseGame,
@@ -18,6 +17,7 @@ const {
   setPlayerStatus,
   changeActivePlayer,
   resetRound,
+  setVotingMessage,
 } = require('./helpers/firebaseHandlers');
 
 const {
@@ -38,11 +38,12 @@ const startNewGameHandler = async (req, res) => {
   const { 
     creatorEmail,
     displayName,
+    id,
   } = req.body
   try {
     const newGameDeck = getNewDeck() //here there will be some sort of function call to db to get the deck
     const hand = getHandFromDeck(newGameDeck)// this will have to check that we are getting 'available' cards
-    const firebaseGameId = await createNewGameOnFirebase(creatorEmail, displayName, newGameDeck) // creates the game, and returns the gameId
+    const firebaseGameId = await createNewGameOnFirebase(creatorEmail, displayName, id, newGameDeck) // creates the game, and returns the gameId
 
     if (newGameDeck.length) res.status(200).json({
       status: 200,
@@ -58,9 +59,9 @@ const startNewGameHandler = async (req, res) => {
 // post: userEmail, gameId
 // returns: hand
 const joinExistingGameHandler = async (req, res) =>{
-  const { email, gameId, displayName } = req.body;
+  const { email, gameId, displayName, id } = req.body;
   try {
-    const {hand, turnNumber} = await joinFirebaseGame(email, displayName, gameId)
+    const {hand, turnNumber} = await joinFirebaseGame(email, displayName, id, gameId)
     res.status(200).json({
       status: 200,
       hand,
@@ -138,31 +139,39 @@ const scoringHandler = async (req, res) => {
   try {
     const playersSnapshot = await getPlayersSnapshot(gameId)
     const players = playersSnapshot.val()
+    console.log('players pre',players)
     const cards = Object.values(cardsInPlay)
+    // console.log('cards',cards)
     const titledCard = cards.find(card=>card.status==='titledCard')
     const submissions = cards.filter(card=>card.status!=='titledCard')
+    const votingMessage = []
     // some guesses are right
     if(titledCard.votesByPlayerTurn){
       // all guesses are right
       if(titledCard.votesByPlayerTurn.length === totalVotes){
         // 'all guessed right'
-        twoPointsToRest(activePlyerByTurn, players);
+        votingMessage.push('Everybody guessed the titled card, 2 point for all the guesser!')
+        twoPointsToRest(activePlyerByTurn, players, votingMessage);
       // some right, some wrong
       } else {
         // 'some right some wrong'
+        votingMessage.push(`some got it, some didn\'t. Good Job ${players[titledCard.submittedBy].displayName}! you get 3 points`)
         // 'three points to good guess'
-        threePointsToTitledCardGuessersAndActivePlayer(titledCard, activePlyerByTurn, players)
+        threePointsToTitledCardGuessersAndActivePlayer(titledCard, activePlyerByTurn, players, votingMessage)
         // 'plus one'
-        onePointPerGuess(submissions, players)
+        onePointPerGuess(submissions, players, votingMessage)
       }
     // all gusses are wrong
     } else {
       // 'all guessed wrong'
-      twoPointsToRest(activePlyerByTurn, players);
+      votingMessage.push('Nobody guessed the titled card, 2 point for all the guesser!')
+      twoPointsToRest(activePlyerByTurn, players, votingMessage);
       // 'plus one'
-      onePointPerGuess(submissions, players)
+      onePointPerGuess(submissions, players, votingMessage)
     }
     players.forEach(player=>player.status = 'scores')
+    console.log('players post',players)
+    await setVotingMessage(gameId, votingMessage)
     await updateScoresInDB(gameId, players)
     await updateRoundStatus(gameId, 'scores')
       res.status(204).send()

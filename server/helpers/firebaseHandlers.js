@@ -88,30 +88,34 @@ const signInHandler = async (req, res) => {
       ...req.body,
       isActive: true,
     }
+    const appUsersRef = db.ref('appUsers');
     if (returningUser) {
-      var ref = db.ref("appUsers");
-      ref.orderByChild("email").equalTo(req.body.email).once("child_added", function(snapshot) { // changed .on to .once
-        const ref = db.ref('appUsers/'+snapshot.key).update({
+      let data = null
+      await appUsersRef.orderByChild("email").equalTo(req.body.email).once("child_added", function(snapshot) { // changed .on to .once
+        db.ref('appUsers/'+snapshot.key).update({ // deleted: const ref = 
           isActive: true,
         })
+        .then(data=snapshot.val())
       });
       res.status(200).json({
         status: 200,
-        data: req.body,
+        data,
         message: 'returning user',
       });
       return;
     } else {    
-      const appUsersRef= db.ref('appUsers');
-      const newPostKey = await appUsersRef.push({
+      const newUserId = await appUsersRef.push().key
+      console.log('newUserId',newUserId)
+      await db.ref('appUsers/' + newUserId).set({
         ...req.body,
         isActive:true,
-        }).key
+        id: newUserId,
+        })
       res.status(200).json({
         status: 200,
         data: {
           ...req.body,
-          userId: newPostKey,
+          id: newUserId,
           },
         message: 'new user',
       });
@@ -155,9 +159,9 @@ const signOutHandler = async (req, res) => {
 }
 
 // -- creates a 'game' in the DB
-// post: creatorEmail, deck?
+// post: creatorEmail, deck? 
 // returns: gameId
-const createNewGameOnFirebase = async (creatorEmail, displayName, newGameDeck) => {
+const createNewGameOnFirebase = async (creatorEmail, displayName, id, newGameDeck) => {
   const gamesRef = db.ref('currentGames')
   const appUsersRef = db.ref('appUsers')
   try {
@@ -177,6 +181,7 @@ const createNewGameOnFirebase = async (creatorEmail, displayName, newGameDeck) =
           email: creatorEmail,
           displayName,
           score: 0,
+          id,
           status: 'playing',
         }
       }
@@ -194,7 +199,7 @@ const createNewGameOnFirebase = async (creatorEmail, displayName, newGameDeck) =
 
 
 //return: hand
-const joinFirebaseGame = async (email, displayName, gameId) => {
+const joinFirebaseGame = async (email, displayName, id, gameId) => {
   const gameRef = db.ref('currentGames/'+gameId)
   const appUsersRef = db.ref('appUsers')
   try {
@@ -211,6 +216,7 @@ const joinFirebaseGame = async (email, displayName, gameId) => {
         email,
         displayName,
         score: 0,
+        id,
         status: 'playing',
       })
     })
@@ -257,18 +263,6 @@ const matchCardToTitleFirebaseDB = async (playerEmail, cardId, cardImg, gameId, 
           submittedBy: turnNumber,
         }
       })
-    })
-  } catch (err) {
-    console.log('err',err)
-  }
-}
-
-// sets the submissionsArray in DB
-const setSubmissionsArrInFirebaseDB = async (submissionsArr, gameId) => {
-  const roundRef = db.ref(`currentGames/${gameId}/round`)
-  try {
-    await roundRef.update({
-      cardsToGuess: submissionsArr
     })
   } catch (err) {
     console.log('err',err)
@@ -395,8 +389,8 @@ const resetRound = async (gameId) => {
   try {
     const pastCardsInPlayRef = await db.ref(`currentGames/${gameId}/round/cardsInPlay`)
     pastCardsInPlayRef.remove()
-    const roundCounterRef = await db.ref(`currentGames/${gameId}/round/currentRound`)
-    const roundCounter = roundCounterRef.val()
+    const roundCounterSnapshot = await db.ref(`currentGames/${gameId}/round/currentRound`).once('value')
+    const roundCounter = roundCounterSnapshot.val()
     db.ref(`currentGames/${gameId}/round`).update({
       status: 'playing',
       currentRound: roundCounter + 1,
@@ -406,10 +400,19 @@ const resetRound = async (gameId) => {
   }
 }
 
+const setVotingMessage = async (gameId, votingMessage) => {
+  try {
+    await db.ref(`currentGames/${gameId}/round`).update({
+      votingMessage,
+    })
+  } catch (err) {
+    console.log('err',err)
+  }
+}
+
 module.exports = {
   updateScoresInDB,
   sendVoteToDB,
-  setSubmissionsArrInFirebaseDB,
   matchCardToTitleFirebaseDB,
   placeCardInFirebaseDB,
   joinFirebaseGame,
@@ -424,4 +427,5 @@ module.exports = {
   setPlayerStatus,
   changeActivePlayer,
   resetRound,
+  setVotingMessage,
 }

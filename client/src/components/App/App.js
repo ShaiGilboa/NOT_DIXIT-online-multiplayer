@@ -23,6 +23,7 @@ import Navbar from '../Navbar';
 import Homepage from '../../pages/Homepage';
 import Game from '../../pages/Game';
 import WaitingForOtherUsers from '../../pages/WaitingForOtherUsers';
+import UserProfile from '../../pages/UserProfile';
 
 const App = () => {
   return (
@@ -40,6 +41,9 @@ const App = () => {
         </Route>
         <Route path='/waiting' >
           <WaitingForOtherUsers />
+        </Route>
+        <Route path='/user-profile' >
+          <UserProfile />
         </Route>
       </Switch>
     </Router>

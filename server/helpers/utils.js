@@ -39,20 +39,24 @@ const twoPointsToRest = (activePlyerByTurn, players) => {
   })
 }
 
-const onePointPerGuess = (submissions, players) => {
+const onePointPerGuess = (submissions, players, votingMessage) => {
   submissions.forEach(submission => {
     const playerToGetPoints = submission.submittedBy;
     let pointsGainedFromVotes = 0;
     if(submission.votesByPlayerTurn){
       pointsGainedFromVotes = submission.votesByPlayerTurn.length
+      submission.votesByPlayerTurn.forEach(voter => {
+        votingMessage.push(`${players[playerToGetPoints].displayName} got 1 point from ${players[voter].displayName}`)
+      })
     }
     players[playerToGetPoints].score += pointsGainedFromVotes;
   })
 }
 
-const threePointsToTitledCardGuessersAndActivePlayer = (titledCard, activePlayerByTurn, players) => {
+const threePointsToTitledCardGuessersAndActivePlayer = (titledCard, activePlayerByTurn, players, votingMessage) => {
   titledCard.votesByPlayerTurn.forEach(turnOfPlayerThatGuessedRight => {
     players[turnOfPlayerThatGuessedRight].score += 3
+    votingMessage.push(`${players[turnOfPlayerThatGuessedRight].displayName} guessed right! you get 3 points!`)
   })
   players[activePlayerByTurn].score += 3;
 }

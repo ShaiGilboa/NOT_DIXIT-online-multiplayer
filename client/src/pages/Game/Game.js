@@ -54,7 +54,7 @@ const Game = () => {
   })
 
   const [submissionsMadeInDB, setSubmissionsMadeInDB] = useState(0);
-
+  const [votingMessage, setVotingMessage] = useState([])
   const [matchCardModalFlag, setMatchCardModalFlag] = useState(false)
 
   // updates the amount of players logged in to the game
@@ -168,7 +168,13 @@ const Game = () => {
   useEffect(()=>{
     const roundStatusRef = firebase.database().ref(`currentGames/${gameId}/round/status`)
     roundStatusRef.on('value', roundStatusSnapshot => {
-      if(roundStatusSnapshot.val()==='scores')dispatch(setGameStatus('end-of-round'))
+      if(roundStatusSnapshot.val()==='scores'){
+        dispatch(setGameStatus('end-of-round'))
+        const votingMessageRef = firebase.database().ref(`currentGames/${gameId}/round/votingMessage`)
+        votingMessageRef.once('value', votingMessageSnapshot => {
+          setVotingMessage(votingMessageSnapshot.val())
+        })
+        }
     })
 
     return () => {
@@ -202,7 +208,7 @@ const Game = () => {
     const playersRef = firebase.database().ref(`currentGames/${gameId}/players`)
     playersRef.on('value', playersSnapshot => {
       let amountOfReadyPlayers = 0;
-      playersSnapshot.val().forEach(player=>{
+      if(playersSnapshot.val())playersSnapshot.val().forEach(player=>{
         if(player.status==='ready')amountOfReadyPlayers++;
       })
       // if all are ready, we can start next round
@@ -247,6 +253,7 @@ const Game = () => {
       .then(res=>res.json())
       .then(res=>{
         if(res.status===200){
+          setVotingMessage([])
           dispatch(addCardToHand(res.card))
           dispatch(setGameStatus('starting-new-round'))
         }
@@ -298,7 +305,7 @@ const Game = () => {
       />}
       {titledCard.title && (<AllPlayedCards/>)}
       <p>isMyTurn: {`${isMyTurn}`}</p>
-      <ScoreBoard players={players} />
+      <ScoreBoard players={players} votingMessage={votingMessage}/>
       {roundData.status === 'waiting-for-other-submissions' && <div>waiting-for-other-submissions</div>}
       {(roundData.status === 'voting' || roundData.status === 'waiting-for-other-votes' || roundData.status==='scores') && (
         <VotingWrapper>

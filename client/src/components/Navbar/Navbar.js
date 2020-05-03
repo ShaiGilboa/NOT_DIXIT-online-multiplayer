@@ -4,6 +4,7 @@ import React, {
 } from 'react';
 import {
   useHistory,
+  Link,
 } from 'react-router-dom';
 import styled from 'styled-components';
 
@@ -40,7 +41,7 @@ const Navbar = () => {
 
   return (
     <Wrapper>
-      <Title>Dixit!</Title>
+      <Title to='/'>Dixit!</Title>
       {roundData.titledCard.title ? <div>card Title: {roundData.titledCard.title}</div>: null}
       {gameData.gameId ? <div>your game id: {gameData.gameId}</div>: null}
       
@@ -51,7 +52,7 @@ const Navbar = () => {
               onClick={()=>handleSignOut()}
             >Sign Out</button>
             {currentUser.info.photoURL 
-              ? <UserAvatar src={currentUser.info.photoURL} />
+              ? <Link to='/user-profile'><UserAvatar src={currentUser.info.photoURL} /></Link>
               : <Initials><p>{getInitial()}</p></Initials>}
           </>)
           : (<>
@@ -77,7 +78,7 @@ const Wrapper = styled.div`
   
 `;
 
-const Title = styled.h1`
+const Title = styled(Link)`
   /* flex:3; */
   color: lightgrey;
   width: fit-content;
