@@ -229,14 +229,14 @@ const joinFirebaseGame = async (email, displayName, id, gameId) => {
 
 // -- sets the titled card in the DB
 //return true/false for success
-const placeCardInFirebaseDB = async (id, img, title, gameId, turnNumber) => {
+const placeCardInFirebaseDB = async (id, /*img,*/ title, gameId, turnNumber) => {
   const cardsInPlayRef = db.ref('currentGames/'+gameId+'/round/cardsInPlay')
   try {
     await cardsInPlayRef.once("value", snapshot => {
       snapshot.ref.update({
           [id]: {
             id,
-            img,
+            imgSrc: ''+id,
             title,
             status: 'titledCard',
             submittedBy: turnNumber,
@@ -250,7 +250,7 @@ const placeCardInFirebaseDB = async (id, img, title, gameId, turnNumber) => {
 }
 
 // adds the guess to a guesses endpoint
-const matchCardToTitleFirebaseDB = async (playerEmail, cardId, cardImg, gameId, turnNumber) => {
+const matchCardToTitleFirebaseDB = async (playerEmail, cardId, /*cardImg,*/ gameId, turnNumber) => {
   const roundRef = db.ref(`currentGames/${gameId}/round`)
   const cardsInPlayRef = db.ref('currentGames/'+gameId+'/round/cardsInPlay')
   try {
@@ -258,7 +258,7 @@ const matchCardToTitleFirebaseDB = async (playerEmail, cardId, cardImg, gameId, 
       cardsInPlaySnapshot.ref.update({
         [cardId]: {
           id: cardId,
-          img: cardImg,
+          imgSrc: ''+cardId,
           status: 'submission',
           submittedBy: turnNumber,
         }
@@ -410,6 +410,16 @@ const setVotingMessage = async (gameId, votingMessage) => {
   }
 }
 
+const getCardsInPlayDB = async (gameId) => {
+  try {
+    const cardsInPlaySnapshot = await db.ref(`currentGames/${gameId}/round/cardsInPlay`).once('value')
+    const cardsInPlay = await cardsInPlaySnapshot.val()
+    return cardsInPlay;
+  } catch (err) {
+    console.log('err',err)
+  }
+}
+
 module.exports = {
   updateScoresInDB,
   sendVoteToDB,
@@ -428,4 +438,5 @@ module.exports = {
   changeActivePlayer,
   resetRound,
   setVotingMessage,
+  getCardsInPlayDB,
 }

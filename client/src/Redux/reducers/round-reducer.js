@@ -77,6 +77,16 @@ export default function  currentUserReducer(state = initialState, action) {
       return produce(state, draftState => {
         draftState.hand.unshift(action.card);
       })
+    case 'UPDATE_VOTES_IN_SUBMISSION':
+      return produce(state, draftState => {
+        draftState.submissionsArr.forEach(submission => {
+          if(action.updatedSubmissions[submission.id].votesByPlayerTurn){
+            submission.votesByPlayerTurn = action.updatedSubmissions[submission.id].votesByPlayerTurn
+          } else {
+            submission.votesByPlayerTurn = []
+          }
+        })
+      })
     default:
       return state;
   }

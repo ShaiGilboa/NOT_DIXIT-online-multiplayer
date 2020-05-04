@@ -27,13 +27,11 @@ const CardInHand = ({
 
   return (
     <CardWrapper
+      src={img}
       index={index}
       style={{zIndex:index}}
       onClick={(event)=>onClick(id, img)}
     >
-      <CardImg>
-        CardInHand: {img}
-      </CardImg>
     </CardWrapper>
     );
 }
@@ -60,7 +58,7 @@ const zoom2 = keyframes`
   } */
 `;
 
-const CardWrapper = styled.div`
+const CardWrapper = styled.img`
   border-radius: 10px;
   border: 1px solid grey;
   background-color: gold;
@@ -78,7 +76,7 @@ const CardWrapper = styled.div`
   }
 `;
 
-const CardImg = styled.div`
+const CardImg = styled.img`
   /* position: relative;
   left: -50px; */
 `;

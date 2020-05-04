@@ -1,6 +1,7 @@
 import React, {
   useContext,
   useEffect,
+  useState,
 } from 'react';
 import {
   useHistory,
@@ -14,6 +15,10 @@ import {
 
 import { AuthContext } from '../../components/AuthContext/AuthContext';
 
+import {
+  PLAYER_COLORS,
+  CARD_IN_HAND_WIDTH,
+} from '../../constants';
 
 const Navbar = () => {
 
@@ -26,7 +31,9 @@ const Navbar = () => {
   const roundData = useSelector(state=>state.roundData)
   const currentUser = useSelector(state=>state.currentUser)
   const history = useHistory();
-  // let initials;
+
+  const [navbarColor, setNavbarColor] = useState('grey');
+  const [dropdownFlag, setDropdownFlag] = useState(false);
 
   const getInitial = () =>{
     const name = currentUser.info.displayName
@@ -34,17 +41,25 @@ const Navbar = () => {
     const initials = nameArr.map(string=>string.charAt(0).toUpperCase()).join(' ')
     return initials
   }
+  useEffect(()=>{
+    console.log('roundData.status',roundData.status)
+    console.log('gameData.turnNumber',gameData.turnNumber)
+    if(roundData.status!=='waiting' && gameData.turnNumber!==null)setNavbarColor(PLAYER_COLORS[gameData.turnNumber])
+  },[roundData.status])
 
   useEffect(()=>{
     if(!currentUser.info.email)history.push('/')
   },[currentUser])
-
+  console.log('navbarColor',navbarColor)
   return (
-    <Wrapper>
-      <Title to='/'>Dixit!</Title>
+    <Wrapper color={navbarColor}>
+      <Title
+        onClick={()=>setDropdownFlag(true)}
+      >Dixit!</Title>
+      <GameInfo>
+      {gameData.gameId ? <GameId>game id: {gameData.gameId}</GameId>: null}
       {roundData.titledCard.title ? <div>card Title: {roundData.titledCard.title}</div>: null}
-      {gameData.gameId ? <div>your game id: {gameData.gameId}</div>: null}
-      
+      </GameInfo>
       <UserInfoBox>
         {currentUser.info.email 
           ? (<>
@@ -56,10 +71,9 @@ const Navbar = () => {
               : <Initials><p>{getInitial()}</p></Initials>}
           </>)
           : (<>
-            <button
+            <SignOutBtn
               onClick={()=>signInWithGoogle()}
-            >Sign In</button>
-            <div>user logo</div>
+            >Sign In</SignOutBtn>
           </>)}
       </UserInfoBox>
     </Wrapper>
@@ -69,8 +83,8 @@ const Navbar = () => {
 export default Navbar;
 
 const Wrapper = styled.div`
-  height: 80px;
-  background-color: grey;
+  height: 60px;
+  background-color: ${props=>props.color};
   /* text-align: center; */
   display: flex;
   justify-content: space-between;
@@ -78,20 +92,37 @@ const Wrapper = styled.div`
   
 `;
 
-const Title = styled(Link)`
+const Title = styled.div`
   /* flex:3; */
   color: lightgrey;
   width: fit-content;
   margin-left: 10px;
-  width: 50%;
+  /* width: 50%; */
   font-size: 2rem;
-`
+`;
+
+const GameId = styled.div`
+  padding-top:5px;
+`;
+
+const GameInfo = styled.div`
+  flex:1;
+`;
 
 const UserInfoBox = styled.div`
   /* flex:1; */
-  width: 40%;
+  width: fit-content;
   display: flex;
   justify-content: space-around;
+  position: relative;
+  right:0;
+`;
+
+const SignOutBtn = styled.button`
+  margin:0;
+  padding: 0;
+  margin-right: 80px;
+  border:0;
 `;
 
 const Initials = styled.div`
@@ -109,6 +140,7 @@ const Initials = styled.div`
 const UserAvatar = styled.img`
   width: 60px;
   height: 60px;
+  padding: 10px;
   border-radius: 50%;
   object-fit: cover;
 `;

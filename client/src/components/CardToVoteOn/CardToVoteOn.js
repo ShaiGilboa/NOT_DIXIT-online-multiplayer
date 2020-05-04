@@ -14,14 +14,11 @@ const CardToVoteOn = ({
   img,
   onClick,
 }) => {
-
   return (
     <CardWrapper
+      src={img}
       onClick={(event)=>onClick(id)}
     >
-      <CardImg>
-        CardInHand: {img}
-      </CardImg>
     </CardWrapper>
     );
 }
@@ -38,7 +35,7 @@ const zoom = keyframes`
   }
 `;
 
-const CardWrapper = styled.div`
+const CardWrapper = styled.img`
   border-radius: 10px;
   border: 1px solid grey;
   background-color: gold;

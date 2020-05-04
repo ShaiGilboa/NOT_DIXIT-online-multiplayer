@@ -9,7 +9,6 @@ const {
   signInHandler,
   signOutHandler,
   startNewGameHandler,
-  roundStartHandler,
   placeCardForRound,
   joinExistingGameHandler,
   matchCardToTitle,
@@ -18,6 +17,7 @@ const {
   drawCardHandler,
   roundPrepHandler,
   startNextRoundHandler,
+  getSubmissionArrHandler,
 } = require('./handlers');
 
 const PORT = process.env.PORT || 4000;
@@ -51,5 +51,6 @@ express()
   .put('/vote/:gameId', votingHandler)
   .put('/calculate-and-give-points', scoringHandler)
   .put('/start-next-round', startNextRoundHandler)
+  .get('/get-submission-array/:gameId', getSubmissionArrHandler)
 
   .listen(PORT, () => console.log(`Listening on port ${PORT}`));

@@ -26,7 +26,7 @@ const Homepage = () => {
   const currentUser = useSelector(state=>state.currentUser)
 
   const [gameId, setGameId] = useState('')
-
+  const [test, setTtest] = useState('')
   const waitingToStart = (gameId, hand) =>{
     dispatch(newGameId(gameId));// and game status = 'waiting-to-start'
     dispatch(setNewHand(hand));// and round status = 'playing'
@@ -92,6 +92,7 @@ const Homepage = () => {
   return (
     <Wrapper>
       <div>Homepage</div>
+      <img src={test} />
       {currentUser.status==='logged-in'
         ? (<>
           <button

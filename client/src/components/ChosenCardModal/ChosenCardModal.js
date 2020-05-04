@@ -8,6 +8,7 @@ import {
   chooseCard,
   changeRoundStatus,
   addSubmissionToSubmissionsArr,
+  setMySubmission,
 } from '../../Redux/actions';
 
 import {
@@ -45,7 +46,7 @@ const ChosenCardModal = ({
     dispatch(chooseCard(chosenCard.id, title));
       const body = {
         id: chosenCard.id,
-        img: chosenCard.img,
+        // img: chosenCard.img,
         title,
         gameId,
         turnNumber,
@@ -62,6 +63,7 @@ const ChosenCardModal = ({
         .then(res=>{
           if (res.status===200) {
             dispatch(changeRoundStatus('waiting-for-other-submissions'))
+            dispatch(setMySubmission(chosenCard.id))
             // adding the titled card to the submissionsArr
             dispatch(addSubmissionToSubmissionsArr({id: chosenCard.id, img:chosenCard.img}))
             setChosenCardModalFlag(false)
@@ -75,7 +77,7 @@ const ChosenCardModal = ({
     const body = {
         playerEmail: info.email,
         cardId: chosenCard.id,
-        cardImg: chosenCard.img,
+        // cardImg: ''+chosenCard.id,
         gameId,
         turnNumber,
       }
@@ -91,6 +93,7 @@ const ChosenCardModal = ({
     .then(res=>{
       if (res.status===200) {
         dispatch(changeRoundStatus('waiting-for-other-submissions'))
+        dispatch(setMySubmission(chosenCard.id))
         // closing the Modal
         setChosenCardModalFlag(false)
       } else {
@@ -114,17 +117,16 @@ const ChosenCardModal = ({
     <Wrapper
       onClick={()=>setChosenCardModalFlag(false)}
     > 
-      <RNDable 
+      {/* <RNDable 
         initialWidth={400}
         initialHeight={400}
         initialTop={1}
         initialLeft={100}
-      >
+      > */}
       <ChosenCardModalContainer
         onSubmit={cardChosen}
         onClick={(event)=>event.stopPropagation()}
       >
-        <CardImg>{chosenCard.img}</CardImg>
         <Info>
           <div>
             {roundData.status==='submitting-titled-card'
@@ -140,8 +142,9 @@ const ChosenCardModal = ({
             <button type="submit">submit</button>
           </div>
         </Info>
+        <CardImg src={chosenCard.img} />
       </ChosenCardModalContainer>
-      </RNDable>
+      {/* </RNDable> */}
     </Wrapper>
     );
 }
@@ -165,18 +168,21 @@ const ChosenCardModalContainer = styled.form`
   border-radius: 10px;
   z-index: 101;
   display: flex;
-  flex-direction:row;
+  flex-direction:column;
   background-color: white;
   /* opacity: 1; */
 `;
 
-const CardImg = styled.div`
-  flex:1;
+const CardImg = styled.img`
+  /* flex:1; */
+  width: 100%;
+  object-fit: cover;
+  border-radius:10px;
 `;
 
 const Info = styled.div`
-  flex:1;
+  /* flex:1; */
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   justify-content: space-around;
 `;

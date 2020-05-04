@@ -89,3 +89,8 @@ export const addCardToHand = (card) => ({
   type: 'ADD_CARD_TO_HAND',
   card
 })
+
+export const updateVotesInSubmission = (updatedSubmissions) => ({
+  type: 'UPDATE_VOTES_IN_SUBMISSION',
+  updatedSubmissions
+})
