@@ -17,7 +17,7 @@ const CardToVoteOn = ({
   return (
     <CardWrapper
       src={img}
-      onClick={(event)=>onClick(id)}
+      onClick={(event)=>onClick(id, img)}
     >
     </CardWrapper>
     );
@@ -27,10 +27,10 @@ export default CardToVoteOn;
 
 const zoom = keyframes`
   from {
-    transform: scale(1);
+    transform: translateY(0) scale(1);
   }
   to {
-    transform: scale(1.5);
+    transform: translateY(20px) scale(2.4);
     z-index: 10;
   }
 `;
@@ -39,8 +39,8 @@ const CardWrapper = styled.img`
   border-radius: 10px;
   border: 1px solid grey;
   background-color: gold;
-  width: ${CARD_IN_HAND_WIDTH};
-  height: ${CARD_IN_HAND_HEIGHT};
+  width: ${CARD_IN_HAND_WIDTH}px;
+  height: ${CARD_IN_HAND_HEIGHT}px;
   object-fit: cover;
   position: relative;
   transition: 5s ease-in-out linear;

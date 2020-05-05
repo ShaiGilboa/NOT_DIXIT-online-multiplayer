@@ -61,10 +61,6 @@ const threePointsToTitledCardGuessersAndActivePlayer = (titledCard, activePlayer
   players[activePlayerByTurn].score += 3;
 }
 
-const newId = () => {
-  return Date.now()
-}
-
 const getOneCardFromDeck = (deck) => {
   const availableCards = deck.filter(card=>card.isAvailable)
   const card = randFromArr(1, availableCards)
@@ -73,7 +69,6 @@ const getOneCardFromDeck = (deck) => {
 }
 
 module.exports = {
-  newId,
   threePointsToTitledCardGuessersAndActivePlayer,
   onePointPerGuess,
   twoPointsToRest,

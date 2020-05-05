@@ -1,12 +1,6 @@
 const {
-  newId,
-  threePointsToTitledCardGuessersAndActivePlayer,
-  onePointPerGuess,
-  twoPointsToRest,
   getNewGameIdBasedOnDate,
   getHandFromDeck,
-  randFromArr,
-  randInRange,
   getOneCardFromDeck,
 } = require('./utils');
 

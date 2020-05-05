@@ -94,3 +94,17 @@ export const updateVotesInSubmission = (updatedSubmissions) => ({
   type: 'UPDATE_VOTES_IN_SUBMISSION',
   updatedSubmissions
 })
+
+export const setPlayers = (players) => ({
+  type: 'SET_PLAYERS',
+  players
+})
+
+export const setActivePlayer = (activePlayer) =>({
+  type: 'SET_ACTIVE_PLAYER',
+  activePlayer,
+})
+
+export const clearTitledCard = () => ({
+  type: 'CLEAR_TITLED_CARD',
+})

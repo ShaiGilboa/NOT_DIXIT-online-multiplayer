@@ -11,6 +11,10 @@ import {
 } from 'react-redux';
 
 import {
+  useHistory,
+} from 'react-router-dom';
+
+import {
   randFromArr,
   reshuffleArr,
   stateDifferentThenDB,
@@ -19,6 +23,7 @@ import {
 import {
   PLAYER_COLORS,
   CARD_IN_HAND_WIDTH,
+  CARD_IN_HAND_HEIGHT,
 } from '../../constants';
 
 import {
@@ -33,6 +38,9 @@ import {
   setGameStatus,
   addCardToHand,
   updateVotesInSubmission,
+  setPlayers,
+  setActivePlayer,
+  clearTitledCard,
 } from '../../Redux/actions';
 
 import CardInHand from '../../components/CardInHand';
@@ -44,16 +52,16 @@ import PlayerToken from '../../components/PlayerToken';
 
 const Game = () => {
   const dispatch = useDispatch()
+  const history = useHistory();
 
   const gameData = useSelector(state=>state.gameData)
-  const gameId = gameData.gameId;
+  const {gameId, players} = gameData;
   const roundData = useSelector(state=>state.roundData)
   const {submissionsArr} = roundData
   const {hand, titledCard, isMyTurn} = roundData
   const email = useSelector(state=>state.currentUser.info.email)
-
   const [playerColor, setPlayerColor] = useState('')
-  const [players, setPlayers] = useState([]);
+  // const [players, setPlayers] = useState([]);
   const [chosenTitle, setChosenTitle] = useState(false)
   const [chosenCardModalFlag, setChosenCardModalFlag] = useState(false)
   const [chosenCard, setChosenCard] = useState({
@@ -70,15 +78,24 @@ const Game = () => {
     setPlayerColor(PLAYER_COLORS[gameData.turnNumber])
   }, [gameData.turnNumber])
 
+  useEffect(()=>{
+    if(!gameData.gameId)history.push('/')
+  },[gameData.gameId])
+
   // updates the amount of players logged in to the game
   // and keeps track of the scores
   //AND
   // checks that all players are ready for next round, once ready
   // only the activePlayer is changing the activePlayer to the next one
   useEffect(()=>{
+      if(gameData.status === 'end-of-round')dispatch(clearTitledCard())
+      
+      // listens to the players that are logged on
       const playersRef = firebase.database().ref(`currentGames/${gameId}/players`)
       playersRef.on('value', playersSnapshot => {
-        if(playersSnapshot.val())if(stateDifferentThenDB(players, playersSnapshot.val()))setPlayers(playersSnapshot.val())
+        if(playersSnapshot.val())if(stateDifferentThenDB(players, playersSnapshot.val())){
+          dispatch(setPlayers(playersSnapshot.val()))
+          }
       
         // checks that all players are ready for next round, once ready
         // only the activePlayer is changing the activePlayer to the next one
@@ -111,15 +128,16 @@ const Game = () => {
 
   // checks when it is 'myTurn'
   useEffect(()=> {
-    const currentRoundRef = firebase.database().ref(`currentGames/`+gameId+'/round');
+    if(gameData.status!=='waiting'){const currentRoundRef = firebase.database().ref(`currentGames/`+gameId+'/round');
     currentRoundRef.child('activePlayer').on('value', (snapshot) => {
       const activePlayerNumber = snapshot.val()
+      dispatch(setActivePlayer(activePlayerNumber))
       if(activePlayerNumber === gameData.turnNumber){
         dispatch(setIsMyTurn(true))
       } else {
         dispatch(setIsMyTurn(false))
       }
-    })
+    })}
 
     return () => {
       // this is where we need to turn off the connection. It's always good to clean up after oursleves.
@@ -255,27 +273,13 @@ const Game = () => {
     }
   }
 
-  const clickOnCardToVote = (cardId) => {
-    if(cardId === roundData.mySubmission || isMyTurn) {
-      //error, cant vote for yourself
-    } else if(roundData.status === 'voting'){
-      dispatch(changeRoundStatus('submitting'))
-      // fetch, put, send vote
-      const body = {
-        cardId,
-        playerVoting: gameData.turnNumber,
-      }
-      fetch(`/vote/${gameId}`, {
-          method: "PUT",
-          headers: {
-              "Content-Type": "application/json",
-              "Accept": "application/json"
-            },
-          body: JSON.stringify(body),
-        })
-        .catch(err=>console.log('err',err))
-      // change status to waiting for votes
-      dispatch(changeRoundStatus('waiting-for-other-votes'))
+  const clickOnCardToVote = (id, img) => {
+    if(roundData.status === 'voting'){
+      setChosenCardModalFlag(true);
+      setChosenCard({
+        id,
+        img,
+      });
     }
   }
 
@@ -286,14 +290,12 @@ const Game = () => {
         setChosenCardModalFlag={setChosenCardModalFlag}
       />}
       {titledCard.title && (<AllPlayedCards/>)}
-      <p>isMyTurn: {`${isMyTurn}`}</p>
       <ScoreBoard players={players} votingMessage={votingMessage}/>
       {roundData.status === 'waiting-for-other-submissions' && <div>waiting-for-other-submissions</div>}
       {(roundData.status === 'voting' || roundData.status === 'waiting-for-other-votes' || roundData.status==='scores') && (
         <VotingWrapper>
-          {roundData.submissionsArr.map(card=>(<Section>
+          {roundData.submissionsArr.map(card=>(<Section key={card.id}>
           <CardToVoteOn
-          key={card.id}
           id={card.id}
           img={card.imgSrc}
           onClick={clickOnCardToVote}
@@ -320,6 +322,7 @@ const Game = () => {
           setChosenCard={setChosenCard}
           onClick={clickOnCardInHand}
         />)}
+      {gameData.gameId ? <GameId data-css='gameId' color={playerColor}>game id: {gameData.gameId}</GameId>: null}
       </CardsInHand>
     </Wrapper>
     );
@@ -334,10 +337,9 @@ const Wrapper = styled.div`
 
 const CardsInHand = styled.div`
   position: absolute;
-  bottom: 0px;
+  bottom: -80px;
   width: 100%;
-  /* margin: 0 auto 10px auto; */
-  /* width: fit-content; */
+  border: 3px solid ${props=>props.color}
   height: fit-content;
   margin: 0 auto;
   display: flex;
@@ -367,4 +369,18 @@ const VotingWrapper = styled.div`
 const Section = styled.div`
   display: flex;
   flex-direction:column;
+`;
+
+const GameId = styled.h2`
+  position: absolute;
+  right:15px;
+  bottom:85px;
+  margin: 0;
+  padding: 2px 10px;
+  height: fit-content;
+  background-color: rgba(0, 0, 0, 0.3);
+  border-radius: 5px;
+  border: solid 1px grey;
+  color: Azure;
+  /* width */
 `;

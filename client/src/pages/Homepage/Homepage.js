@@ -14,6 +14,10 @@ import {
 import styled from 'styled-components';
 
 import {
+  validateGameIdType,
+} from '../../utils';
+
+import {
   changeCurrentUserStatus,
   setNewHand,
   newGameId,
@@ -61,12 +65,14 @@ const Homepage = () => {
 
   const joinExistingGame = (event) => {
     event.preventDefault();
+    const parsedGameId = parseInt(gameId);
+    if(!validateGameIdType(parsedGameId))
     dispatch(changeCurrentUserStatus('joining-game'))
     //TODO: convert Id to XXX-XXXX-XXX
     const body = {
       email: currentUser.info.email,
       displayName: currentUser.info.displayName,
-      gameId: parseInt(gameId),
+      gameId: parsedGameId,
       id: currentUser.info.id,
     }
     fetch('/join-existing-game', {
@@ -86,34 +92,32 @@ const Homepage = () => {
     })
   }
 
-  useEffect(()=>{
-    // if(currentUser.status==='logged-in')history.push('/game')
-  },[currentUser])
   return (
     <Wrapper>
       <div>Homepage</div>
-      <img src={test} />
-      {currentUser.status==='logged-in'
-        ? (<>
-          <button
-            onClick={()=>startNewGame()}
-          >Would you like to start a new game?
-          </button>
-          <form
-            onSubmit={(event)=>{joinExistingGame(event)}}
-          >
-            <label htmlFor='gameId'>game id:</label>
-            <input type='text' id='gameId' name='gameId' value={gameId}
-              onChange={(event)=>setGameId(event.target.value)}
-            />
+      <Welcome>
+        {currentUser.status==='logged-in'
+          ? (<>
             <button
-              type='submit'
-            >Would you like to join an existing game?
+              onClick={()=>startNewGame()}
+            >Would you like to start a new game?
             </button>
-          </form>
-        </>)
-        : (<>
-        </>)}
+            <form
+              onSubmit={(event)=>{joinExistingGame(event)}}
+            >
+              <label htmlFor='gameId'>game id:</label>
+              <input type='text' id='gameId' name='gameId' value={gameId}
+                onChange={(event)=>setGameId(event.target.value)}
+              />
+              <button
+                type='submit'
+              >Would you like to join an existing game?
+              </button>
+            </form>
+          </>)
+          : (<>
+          </>)}
+      </Welcome>
     </Wrapper>
     );
 }
@@ -121,5 +125,11 @@ const Homepage = () => {
 export default Homepage;
 
 const Wrapper = styled.div`
+  height: 100%;
+  width: 100%;
+`;
 
+const Welcome = styled.div`
+  display: grid;
+  grid-area:
 `;

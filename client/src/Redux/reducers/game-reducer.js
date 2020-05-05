@@ -15,6 +15,8 @@ const initialState = {
   turnNumber: null,
   score: 0,
   currentRound: 0,
+  players: [],
+  activePlayer: null,
 }
 
 export default function  currentUserReducer(state = initialState, action) {
@@ -32,10 +34,10 @@ export default function  currentUserReducer(state = initialState, action) {
         draftState.gameId = null;
         draftState.isMyTurn = false;
       })
-    // case 'SET_PLAYERS_AMOUNT':
-    //   return produce(state, draftState => {
-    //     draftState.playersAmount = action.newAmount;
-    //   })
+    case 'SET_PLAYERS':
+      return produce(state, draftState => {
+        draftState.players = action.players;
+      })
     case 'SET_PLAYER_TURN':
       return produce(state, draftState => {
         draftState.turnNumber = action.turnNumber;
@@ -43,6 +45,10 @@ export default function  currentUserReducer(state = initialState, action) {
     case 'SET_GAME_STATUS':
       return produce(state, draftState => {
         draftState.status = action.newStatus
+      })
+    case 'SET_ACTIVE_PLAYER':
+      return produce(state, draftState => {
+        draftState.activePlayer = action.activePlayer
       })
     default:
       return state;

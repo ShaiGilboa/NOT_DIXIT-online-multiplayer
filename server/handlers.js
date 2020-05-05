@@ -8,7 +8,7 @@ const {
   joinFirebaseGame,
   createNewGameOnFirebase,
   signOutHandler,
-  GameOverHandle,
+  GameOverHandle, // TODO:
   signInHandler,
   getNewDeck,
   getPlayersSnapshot,
@@ -22,14 +22,10 @@ const {
 } = require('./helpers/firebaseHandlers');
 
 const {
-  newId,
   threePointsToTitledCardGuessersAndActivePlayer,
   onePointPerGuess,
   twoPointsToRest,
-  getNewGameIdBasedOnDate,
   getHandFromDeck,
-  randFromArr,
-  randInRange,
 } = require('./helpers/utils');
 
 // -- sets the deck, creates a gameId

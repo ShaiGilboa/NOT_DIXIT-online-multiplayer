@@ -46,7 +46,6 @@ const ChosenCardModal = ({
     dispatch(chooseCard(chosenCard.id, title));
       const body = {
         id: chosenCard.id,
-        // img: chosenCard.img,
         title,
         gameId,
         turnNumber,
@@ -77,7 +76,6 @@ const ChosenCardModal = ({
     const body = {
         playerEmail: info.email,
         cardId: chosenCard.id,
-        // cardImg: ''+chosenCard.id,
         gameId,
         turnNumber,
       }
@@ -102,12 +100,35 @@ const ChosenCardModal = ({
     })
   }
 
+  const vote=() => {
+    dispatch(changeRoundStatus('submitting'))
+      // fetch, put, send vote
+      const body = {
+        cardId: chosenCard.id,
+        playerVoting: turnNumber,
+      }
+      fetch(`/vote/${gameId}`, {
+          method: "PUT",
+          headers: {
+              "Content-Type": "application/json",
+              "Accept": "application/json"
+            },
+          body: JSON.stringify(body),
+        })
+        .catch(err=>console.log('err',err))
+      // change status to waiting for votes
+        setChosenCardModalFlag(false)
+      dispatch(changeRoundStatus('waiting-for-other-votes'))
+    }
+
   const cardChosen = (event) => {
     event.preventDefault();
     if(title.length>0){
       if(roundData.status==='submitting-titled-card') setRoundTitledCard()
     } else if(roundData.status==='matching-card-to-title'){ 
       setGuessCardUnderTitle()
+    } else if(roundData.status === 'voting'){
+      vote()
     } else {
       console.log('error in title');// error in title;
     }
@@ -139,7 +160,11 @@ const ChosenCardModal = ({
               : (
                 <label>does this card match {titledCard.title}?</label>
               )}
-            <button type="submit">submit</button>
+            {isMyTurn && roundData.status !== "submitting-titled-card"
+            ? <p>your turn, you cannot vote</p>
+            : ((chosenCard && roundData.mySubmission && (chosenCard.id === roundData.mySubmission))
+              ? <p>this is your card</p>
+              : <button type="submit">submit</button>)}
           </div>
         </Info>
         <CardImg src={chosenCard.img} />
@@ -152,7 +177,7 @@ const ChosenCardModal = ({
 export default ChosenCardModal;
 
 const Wrapper = styled.div`
-  height: 100%;
+  height: calc(100vh - 60px);
   position: relative;
   width: 100%;
   z-index: 100;

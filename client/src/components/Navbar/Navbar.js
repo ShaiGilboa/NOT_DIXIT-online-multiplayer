@@ -42,23 +42,30 @@ const Navbar = () => {
     return initials
   }
   useEffect(()=>{
-    console.log('roundData.status',roundData.status)
-    console.log('gameData.turnNumber',gameData.turnNumber)
     if(roundData.status!=='waiting' && gameData.turnNumber!==null)setNavbarColor(PLAYER_COLORS[gameData.turnNumber])
   },[roundData.status])
 
   useEffect(()=>{
     if(!currentUser.info.email)history.push('/')
   },[currentUser])
-  console.log('navbarColor',navbarColor)
+
   return (
     <Wrapper color={navbarColor}>
       <Title
         onClick={()=>setDropdownFlag(true)}
       >Dixit!</Title>
       <GameInfo>
-      {gameData.gameId ? <GameId>game id: {gameData.gameId}</GameId>: null}
-      {roundData.titledCard.title ? <div>card Title: {roundData.titledCard.title}</div>: null}
+        {gameData.status!=='waiting' && (roundData.isMyTurn 
+          ? <ActivePlayerIsMe>IT'S YOUR TURN - {roundData.status==='submitting-titled-card' ? <p>choose the titled card</p> : (gameData.status==='end-of-round' ? <p>scores!</p> : <p>waiting</p>)}</ActivePlayerIsMe>
+          : <ActivePlayer>
+            <PlayerColor color={PLAYER_COLORS[gameData.activePlayer]}/>'s turn - 
+            {roundData.status==='waiting-for-title' && <p>waiting for titled card</p>}
+            {roundData.status === 'matching-card-to-title' && <p>find the best card for the title</p>}
+            {roundData.status === 'waiting-for-other-submissions' && <p>waiting for other players to choose their card</p>}
+            {roundData.status === 'voting' && <p>Choose the card that best matches the title</p>}
+            {roundData.status === 'waiting-for-other-votes' && (gameData.status==='end-of-round' ? <p>Scores!</p> : <p>Waiting for other votes</p>)}
+            </ActivePlayer>)}
+        {roundData.titledCard.title ? <div>card Title: {roundData.titledCard.title}</div>: null}
       </GameInfo>
       <UserInfoBox>
         {currentUser.info.email 
@@ -85,7 +92,6 @@ export default Navbar;
 const Wrapper = styled.div`
   height: 60px;
   background-color: ${props=>props.color};
-  /* text-align: center; */
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -93,11 +99,9 @@ const Wrapper = styled.div`
 `;
 
 const Title = styled.div`
-  /* flex:3; */
   color: lightgrey;
   width: fit-content;
   margin-left: 10px;
-  /* width: 50%; */
   font-size: 2rem;
 `;
 
@@ -107,10 +111,10 @@ const GameId = styled.div`
 
 const GameInfo = styled.div`
   flex:1;
+  padding-left: 20px;
 `;
 
 const UserInfoBox = styled.div`
-  /* flex:1; */
   width: fit-content;
   display: flex;
   justify-content: space-around;
@@ -132,7 +136,6 @@ const Initials = styled.div`
   background-color:pink;
   color: white;
   text-align: center;
-  /* align-items:center; */
   font-size: large;
   font-weight: bold;
 `;
@@ -144,3 +147,24 @@ const UserAvatar = styled.img`
   border-radius: 50%;
   object-fit: cover;
 `;
+
+const ActivePlayerIsMe = styled.div`
+  font-size: 20px;
+  width: fit-content;
+  color: Azure;
+  background-color: rgba(0, 0, 0, 0.3);
+  display: flex;
+  flex-direction: row;
+`
+
+const ActivePlayer = styled.div`
+  display: flex;
+  flex-direction: row;
+`;
+
+const PlayerColor = styled.div`
+  width:20px;
+  height:20px;
+  border-radius: 50%;
+  background-color: ${props=>props.color};
+`

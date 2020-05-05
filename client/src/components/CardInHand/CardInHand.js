@@ -44,34 +44,23 @@ const zoom1 = keyframes`
     /* opacity: 1; */
   }
   to {
-    transform: translateY(-100px) scale(1.5);
+    transform: translateY(-170px) scale(2);
     z-index: 10;
   }
-`;
-
-const zoom2 = keyframes`
-  /* from {
-    transform: scale(1);
-  }
-  to {  
-    transform: scale(2);
-  } */
 `;
 
 const CardWrapper = styled.img`
   border-radius: 10px;
   border: 1px solid grey;
   background-color: gold;
-  width: ${CARD_IN_HAND_WIDTH};
-  height: ${CARD_IN_HAND_HEIGHT};
+  width: ${CARD_IN_HAND_WIDTH}px;
+  height: ${CARD_IN_HAND_HEIGHT}px;
   object-fit: cover;
   position: relative;
   ${props=> `left: calc(${props.index}* -40px);`}
   transition: 5s ease-in-out linear;
   &:hover {
     animation: ${zoom1} 500ms ease-in forwards;
-    /* animation: ${zoom2} 500ms ease-in forwards; */
-    /* z-index:10; */
     cursor:pointer;
   }
 `;

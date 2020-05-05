@@ -87,6 +87,10 @@ export default function  currentUserReducer(state = initialState, action) {
           }
         })
       })
+    case 'CLEAR_TITLED_CARD':
+      return produce(state, draftState=>{
+        draftState.titledCard = {};
+      })
     default:
       return state;
   }

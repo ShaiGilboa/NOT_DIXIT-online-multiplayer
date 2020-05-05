@@ -15,7 +15,6 @@ import {
 //   useHistory,
 // } from 'react-router';
 import styled from 'styled-components';
-
 import GlobalStyles from '../GlobalStyles';
 // import { AuthContext } from '../AuthContext';
 
@@ -25,6 +24,7 @@ import Game from '../../pages/Game';
 import WaitingForOtherUsers from '../../pages/WaitingForOtherUsers';
 import UserProfile from '../../pages/UserProfile';
 
+import Board from '../Board';
 const App = () => {
   return (
     <Router>
@@ -32,6 +32,7 @@ const App = () => {
       <GlobalStyles />
       <Navbar />
       {/*different pages*/}
+      <Board />
       <Switch>
         <Route path='/' exact>
           <Homepage />

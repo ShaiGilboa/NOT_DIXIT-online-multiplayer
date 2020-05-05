@@ -35,7 +35,14 @@ footer, header, hgroup, menu, nav, section {
 body {
 	line-height: 1;
 	min-height: 100vh;
-	/* overflow-x:hidden; */
+	width: 100vw;
+	overflow:hidden;
+}
+#root{
+	min-height: 100vh;
+	width: 100%;
+	margin: 0;
+	padding: 0;
 }
 ol, ul {
 	list-style: none;
