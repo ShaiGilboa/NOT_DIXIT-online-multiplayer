@@ -19,6 +19,10 @@ const {
   resetRound,
   setVotingMessage,
   getCardsInPlayDB,
+  startGame,
+  startNewChat,
+  joinChat,
+  postMessageOnChat,
 } = require('./helpers/firebaseHandlers');
 
 const {
@@ -31,10 +35,11 @@ const {
 // -- sets the deck, creates a gameId
 // get:
 // returns: 
-const startNewGameHandler = async (req, res) => {
+const createNewGameHandler = async (req, res) => {
   const { 
     creatorEmail,
     displayName,
+    photoURL,
     id,
   } = req.body
   try {
@@ -42,11 +47,19 @@ const startNewGameHandler = async (req, res) => {
     const hand = getHandFromDeck(newGameDeck)// this will have to check that we are getting 'available' cards
     const firebaseGameId = await createNewGameOnFirebase(creatorEmail, displayName, id, newGameDeck) // creates the game, and returns the gameId
     const hand64 = hand.map(card=>card = deck64.find(card64 => card64.id===card.id))
-    if (newGameDeck.length) res.status(200).json({
-      status: 200,
-      hand: hand64,
-      gameId: firebaseGameId,
-    })
+    await startNewChat(firebaseGameId ,creatorEmail, photoURL)
+    if (newGameDeck.length) {
+      res.status(200).json({
+        status: 200,
+        hand: hand64,
+        gameId: firebaseGameId,
+      })
+    } else {
+      res.status(500).json({
+        status: 500,
+        message: 'problem with server, please try again'
+      })
+    }
   } catch (err) {
     console.log('err',err)
   }
@@ -56,10 +69,13 @@ const startNewGameHandler = async (req, res) => {
 // post: userEmail, gameId
 // returns: hand
 const joinExistingGameHandler = async (req, res) =>{
-  const { email, gameId, displayName, id } = req.body;
+  const { email, gameId, displayName, id, photoURL } = req.body;
   try {
-    const {hand, turnNumber} = await joinFirebaseGame(email, displayName, id, gameId)
+    const response = await joinFirebaseGame(email, displayName, id, gameId)
+    if(typeof response === 'string')throw response
+    const {hand, turnNumber} = response
     const hand64 = hand.map(card=>card = deck64.find(card64 => card64.id===card.id))
+    await joinChat(gameId, email, photoURL)
     res.status(200).json({
       status: 200,
       hand: hand64,
@@ -67,7 +83,11 @@ const joinExistingGameHandler = async (req, res) =>{
       turnNumber,
     })
   } catch (err) {
-    console.log('err',err)
+    console.log('errsdsd',err)
+    res.status(400).json({
+      status: 400,
+      message: err,
+    })
   }
 }
 
@@ -209,9 +229,6 @@ const startNextRoundHandler = async (req, res) => {
   try {
     await changeActivePlayer(gameId)
     await resetRound(gameId)
-    // await db.ref(`currentGames/${gameId}`).update({
-    //   status: 'playing'
-    // })
   } catch (err) {
     console.log('err',err)
   }
@@ -223,10 +240,7 @@ const getSubmissionArrHandler = async (req, res) => {
   const {gameId} = req.params;
   try {
     const submissions = await getCardsInPlayDB(parseInt(gameId))
-
     Object.keys(submissions).map(cardId=> submissions[cardId].imgSrc = deck64[cardId].imgSrc)
-    // const submissionArr64 = submissionArr.map(card=> card.imgSrc = deck64[card.id].imgSrc)
-    // console.log('submissions',submissions)
     res.status(200).json({
       status: 200,
       submissions,
@@ -236,10 +250,35 @@ const getSubmissionArrHandler = async (req, res) => {
   }
 }
 
+// change the game status from 'waiting' to 'playing'
+// patch: {gameId} req.body
+const startGameHandler = async (req, res) => {
+  const {gameId} = req.body;
+  try {
+    await startGame(gameId, 'playing')
+    //clear chat
+    res.status(204).send()
+  } catch (err) {
+    console.log('err',err)
+  }
+}
+
+// adds a message to the chatId
+// PUT: {gameId, userEmail, displayName, photoURL, playerTurnNumber, body} req.body
+const sendMessageHandler = async (req, res) => { 
+  const {gameId, userEmail, displayName, photoURL, playerTurnNumber, body} = req.body;
+  try {
+    await postMessageOnChat(gameId, userEmail, displayName, photoURL, playerTurnNumber, body)
+    res.status(204).send();
+  } catch (err) {
+    console.log('err',err)
+  }
+}
+
 module.exports = {
   signInHandler,
   signOutHandler,
-  startNewGameHandler,
+  createNewGameHandler,
   placeCardForRound,
   joinExistingGameHandler,
   matchCardToTitle,
@@ -248,4 +287,6 @@ module.exports = {
   roundPrepHandler,
   startNextRoundHandler,
   getSubmissionArrHandler,
+  startGameHandler,
+  sendMessageHandler,
 }

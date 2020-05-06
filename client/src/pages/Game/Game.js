@@ -294,15 +294,19 @@ const Game = () => {
       {roundData.status === 'waiting-for-other-submissions' && <div>waiting-for-other-submissions</div>}
       {(roundData.status === 'voting' || roundData.status === 'waiting-for-other-votes' || roundData.status==='scores') && (
         <VotingWrapper>
-          {roundData.submissionsArr.map(card=>(<Section key={card.id}>
-          <CardToVoteOn
-          id={card.id}
-          img={card.imgSrc}
-          onClick={clickOnCardToVote}
-          />
-          <TokensWrapper data-css="tokensWrapper">
-            {gameData.status==='end-of-round' && card.votesByPlayerTurn.map(voter => <PlayerToken data-css='token' color={PLAYER_COLORS[voter]} />)}
-          </TokensWrapper>
+          {roundData.submissionsArr.map(card=>(
+          <Section key={card.id}>
+            <TokensWrapper data-css="tokensWrapper">
+              {gameData.status==='end-of-round' && <div><span>submitted by:<PlayerToken data-css='token' color={PLAYER_COLORS[card.submittedBy]} /></span></div>}
+            </TokensWrapper>
+            <CardToVoteOn
+            id={card.id}
+            img={card.imgSrc}
+            onClick={clickOnCardToVote}
+            />
+            <TokensWrapper data-css="tokensWrapper">
+              {gameData.status==='end-of-round' && card.votesByPlayerTurn.map(voter => <PlayerToken data-css='token' color={PLAYER_COLORS[voter]} />)}
+            </TokensWrapper>
           </Section>)
           )}
         </VotingWrapper>

@@ -55,16 +55,23 @@ const Navbar = () => {
         onClick={()=>setDropdownFlag(true)}
       >Dixit!</Title>
       <GameInfo>
-        {gameData.status!=='waiting' && (roundData.isMyTurn 
-          ? <ActivePlayerIsMe>IT'S YOUR TURN - {roundData.status==='submitting-titled-card' ? <p>choose the titled card</p> : (gameData.status==='end-of-round' ? <p>scores!</p> : <p>waiting</p>)}</ActivePlayerIsMe>
-          : <ActivePlayer>
+        {(gameData.status!=='waiting' && gameData.status !== "waiting-to-start") && (roundData.isMyTurn 
+          ? (<ActivePlayerIsMe>IT'S YOUR TURN - {roundData.status==="submitting-titled-card"
+            ? <p>choose the titled card</p> 
+            : (gameData.status==='end-of-round' 
+              ? <p>scores</p> 
+              : <p>waiting</p>
+              )
+              }
+            </ActivePlayerIsMe>)
+          : (<ActivePlayer>
             <PlayerColor color={PLAYER_COLORS[gameData.activePlayer]}/>'s turn - 
             {roundData.status==='waiting-for-title' && <p>waiting for titled card</p>}
             {roundData.status === 'matching-card-to-title' && <p>find the best card for the title</p>}
             {roundData.status === 'waiting-for-other-submissions' && <p>waiting for other players to choose their card</p>}
             {roundData.status === 'voting' && <p>Choose the card that best matches the title</p>}
             {roundData.status === 'waiting-for-other-votes' && (gameData.status==='end-of-round' ? <p>Scores!</p> : <p>Waiting for other votes</p>)}
-            </ActivePlayer>)}
+            </ActivePlayer>))}
         {roundData.titledCard.title ? <div>card Title: {roundData.titledCard.title}</div>: null}
       </GameInfo>
       <UserInfoBox>

@@ -108,3 +108,17 @@ export const setActivePlayer = (activePlayer) =>({
 export const clearTitledCard = () => ({
   type: 'CLEAR_TITLED_CARD',
 })
+
+export const startChat = (id) => ({
+  type: 'START_CHAT',
+  id,
+})
+
+export const clearChat = () =>({
+  type: 'CLEAR_CHAT',
+})
+
+export const addMessageToChat = (message) => ({
+  type: 'ADD_MESSAGE_TO_CHAT',
+  message,
+})

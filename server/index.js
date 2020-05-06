@@ -8,7 +8,7 @@ require('dotenv').config();
 const {
   signInHandler,
   signOutHandler,
-  startNewGameHandler,
+  createNewGameHandler,
   placeCardForRound,
   joinExistingGameHandler,
   matchCardToTitle,
@@ -18,6 +18,8 @@ const {
   roundPrepHandler,
   startNextRoundHandler,
   getSubmissionArrHandler,
+  startGameHandler,
+  sendMessageHandler,
 } = require('./handlers');
 
 const PORT = process.env.PORT || 4000;
@@ -43,7 +45,7 @@ express()
   // .get('/users', getUser)
   .post('/sign-in', signInHandler)
   .put('/sign-out', signOutHandler)
-  .post('/start-new-game', startNewGameHandler)
+  .post('/create-new-game', createNewGameHandler)
   .post('/join-existing-game', joinExistingGameHandler)
   .post('/prep-for-next-round', roundPrepHandler)
   .post('/place-card', placeCardForRound)
@@ -52,5 +54,7 @@ express()
   .put('/calculate-and-give-points', scoringHandler)
   .put('/start-next-round', startNextRoundHandler)
   .get('/get-submission-array/:gameId', getSubmissionArrHandler)
+  .patch('/start-game', startGameHandler)
+  .put('/send-message', sendMessageHandler)
 
   .listen(PORT, () => console.log(`Listening on port ${PORT}`));

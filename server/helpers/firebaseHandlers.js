@@ -28,6 +28,7 @@ const queryDB = async (key) => {
   return data;
 }
 
+
 const getNewHand = async (gameRef) => {
   let hand =null;
   try {//get he state state of the gameDeck
@@ -71,6 +72,7 @@ admin.initializeApp({
   databaseURL: process.env.FB_DATABASE_URL,
 });
 const db = admin.database();
+// db.ref('currentGames').remove()
 
 // -- deals with new VS returning users, changes status
 // post: req.body{}
@@ -162,7 +164,7 @@ const createNewGameOnFirebase = async (creatorEmail, displayName, id, newGameDec
     const newGameId = getNewGameIdBasedOnDate() ///Date.now() % 1000000000
     await gamesRef.child(`${newGameId}`).set({
       creatorEmail,
-      status: 'playing',
+      status: 'waiting',
       gameDeck: newGameDeck,
       isOpen:true,
       currentRound: 1,
@@ -197,6 +199,10 @@ const joinFirebaseGame = async (email, displayName, id, gameId) => {
   const gameRef = db.ref('currentGames/'+gameId)
   const appUsersRef = db.ref('appUsers')
   try {
+    const gameSnapshot = await gameRef.once('value')
+    if(!gameSnapshot.val()) throw 'game not found'
+    const isOpenSnapshot = await db.ref(`currentGames/${gameId}/isOpen`).once('value')
+    if(!isOpenSnapshot.val()) throw 'game closed'
     let turnNumber = null
     await appUsersRef.orderByChild("email").equalTo(email).once('child_added', snapshot => { // changed .on to .once
       db.ref('appUsers/'+snapshot.key).update({
@@ -217,7 +223,8 @@ const joinFirebaseGame = async (email, displayName, id, gameId) => {
     let hand = await getNewHand(gameRef);
     return {hand, turnNumber};
   } catch (err) {
-    console.log('err',err)
+    console.log('errrrrrrr',err)
+    return err
   }
 }
 
@@ -357,6 +364,17 @@ const setPlayerStatus = async (gameId, playerTurn, newStatus) => {
   }
 }
 
+const startGame = async (gameId, newStatus) => {
+  try {
+    await db.ref(`currentGames/${gameId}`).update({
+      status: newStatus,
+      isOpen: false,
+    })
+  } catch (err) {
+    console.log('err',err)
+  }
+}
+
 const changeActivePlayer = async (gameId) => {
   try {
     const currentActivePlayerRef = await db.ref(`currentGames/${gameId}/round/activePlayer`).once('value')
@@ -414,6 +432,37 @@ const getCardsInPlayDB = async (gameId) => {
   }
 }
 
+const startNewChat = async (gameId, userEmail, photoURL) => {
+  try {
+    await db.ref(`currentChats/${gameId}`).set({
+      participantsByTurnNumber: [{userEmail, photoURL}]
+    })
+  } catch (err) {
+    console.log('err',err)
+  }
+}
+
+const joinChat = async (gameId, userEmail, photoURL) => {
+  try {
+    await db.ref(`currentChats/${gameId}`).once('value', chatSnapshot => {
+      const participantsByTurnNumber = chatSnapshot.val().participantsByTurnNumber
+      db.ref(`currentChats/${gameId}`).update({
+        participantsByTurnNumber: participantsByTurnNumber.concat({userEmail, photoURL})
+      })
+    })
+  } catch (err) {
+    console.log('err',err)
+  }
+}
+
+const postMessageOnChat = async (gameId, userEmail, displayName, photoURL, playerTurnNumber, body) => {
+  try {
+    await db.ref(`currentChats/${gameId}/conversation`).push({body, photoURL, playerTurnNumber, displayName, email:userEmail, timestamp: Date.now()})
+  } catch (err) {
+    console.log('err',err)
+  }
+}
+
 module.exports = {
   updateScoresInDB,
   sendVoteToDB,
@@ -433,4 +482,8 @@ module.exports = {
   resetRound,
   setVotingMessage,
   getCardsInPlayDB,
+  startGame,
+  startNewChat,
+  joinChat,
+  postMessageOnChat,
 }

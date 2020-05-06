@@ -44,15 +44,15 @@ const Wrapper = styled.div`
 
 `;
 
-const move = (top, left, previousTop, previousLeft) => keyframes`
-  from {
-    /* transform: translate(${previousLeft}%, ${previousTop}%) */
-    transform: translate(0, 0)
-  }
-  to {
-    transform: translate(${left}%, ${top}%)
-  }
-`
+// const move = (top, left, previousTop, previousLeft) => keyframes`
+//   /* from { */
+//     /* transform: translate(${previousLeft}%, ${previousTop}%) */
+//     /* transform: translate(0, 0) */
+//   /* } */
+//   to {
+//     transform: translate(${left}%, ${top}%)
+//   }
+// `
 
 const Token = styled.img`
   /* filter: ${props=>props.filter}; */
@@ -64,6 +64,7 @@ const Token = styled.img`
   width: 6%;
   height: 6%;
   border-radius: 20%;
-  animation: ${props=>move(props.location.top, props.location.left, props.previousLocation.top, props.previousLocation.left)} 0.5s linear forwards;
   box-shadow: 0px 0px 25px 2px rgba(0,0,0,0.4),  inset 0px 0px 25px 2px rgba(0,0,0,0.4);
+  transition: all 0.5s linear;
 `;
+  //animation: ${props=>move(props.location.top, props.location.left, props.previousLocation.top, props.previousLocation.left)} 0.5s linear forwards;

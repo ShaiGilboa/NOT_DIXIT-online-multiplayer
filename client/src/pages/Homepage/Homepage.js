@@ -35,8 +35,8 @@ const Homepage = () => {
     dispatch(newGameId(gameId));// and game status = 'waiting-to-start'
     dispatch(setNewHand(hand));// and round status = 'playing'
     // dispatch(changeCurrentUserStatus('playing'))
-    // history.push('/waiting') // waiting room
-    history.push('/game')
+    history.push('/waiting') // waiting room
+    // history.push('/game')
   }
 
   const startNewGame = () => {
@@ -44,9 +44,10 @@ const Homepage = () => {
     const body= {
       creatorEmail: currentUser.info.email,
       displayName: currentUser.info.displayName,
+      photoURL: currentUser.info.photoURL,
       id: currentUser.info.id,
     }
-    fetch('/start-new-game', {
+    fetch('/create-new-game', {
       method: 'POST',
       headers: {
             "Content-Type": "application/json",
@@ -59,6 +60,8 @@ const Homepage = () => {
         if(res.status===200) {
           dispatch(setPlayerTurn(0))
           waitingToStart(res.gameId, res.hand);
+        } else {
+          console.log('res.message',res.message)
         }
       })
   }
@@ -73,6 +76,7 @@ const Homepage = () => {
       email: currentUser.info.email,
       displayName: currentUser.info.displayName,
       gameId: parsedGameId,
+      photoURL: currentUser.info.photoURL,
       id: currentUser.info.id,
     }
     fetch('/join-existing-game', {
@@ -88,7 +92,9 @@ const Homepage = () => {
       if(res.status===200) {
         dispatch(setPlayerTurn(res.turnNumber))
         waitingToStart(res.gameId, res.hand);
-      }
+      } else {
+          console.log('res.message',res.message)
+        }
     })
   }
 
