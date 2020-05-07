@@ -17,6 +17,7 @@ const initialState = {
   currentRound: 0,
   players: [],
   activePlayer: null,
+  votingMessage: [],
 }
 
 export default function  currentUserReducer(state = initialState, action) {
@@ -33,6 +34,12 @@ export default function  currentUserReducer(state = initialState, action) {
         draftState.status = 'waiting';
         draftState.gameId = null;
         draftState.isMyTurn = false;
+        draftState.turnNumber = null;
+        draftState.score = 0;
+        draftState.currentRound = 0;
+        draftState.players = [];
+        draftState.activePlayer = null;
+        draftState.votingMessage = [];
       })
     case 'SET_PLAYERS':
       return produce(state, draftState => {
@@ -49,6 +56,10 @@ export default function  currentUserReducer(state = initialState, action) {
     case 'SET_ACTIVE_PLAYER':
       return produce(state, draftState => {
         draftState.activePlayer = action.activePlayer
+      })
+    case 'SET_VOTING_MESSAGE':
+      return produce(state, draftState => {
+        draftState.votingMessage = action.votingMessage;
       })
     default:
       return state;

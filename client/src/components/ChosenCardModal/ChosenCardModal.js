@@ -17,6 +17,7 @@ import {
 } from 'react-redux';
 
 import RNDable from '../RNDable';
+import UnstyledButton from '../../components/UnstyledButton';
 
 const ChosenCardModal = ({
   chosenCard,
@@ -149,7 +150,7 @@ const ChosenCardModal = ({
         onClick={(event)=>event.stopPropagation()}
       >
         <Info>
-          <div>
+          {/* <div> */}
             {roundData.status==='submitting-titled-card'
               ? (<>
               <label htmlFor="title">What title? </label>
@@ -165,7 +166,7 @@ const ChosenCardModal = ({
             : ((chosenCard && roundData.mySubmission && (chosenCard.id === roundData.mySubmission))
               ? <p>this is your card</p>
               : <button type="submit">submit</button>)}
-          </div>
+          {/* </div> */}
         </Info>
         <CardImg src={chosenCard.img} />
       </ChosenCardModalContainer>
@@ -187,21 +188,24 @@ const Wrapper = styled.div`
 
 const ChosenCardModalContainer = styled.form`
   position: relative;
-  width: 400px;
-  height: 400px;
+  width: fit-content;
+  height: fit-content;
   margin: auto;
   border-radius: 10px;
   z-index: 101;
   display: flex;
   flex-direction:column;
   background-color: white;
+  object-fit:cover;
   /* opacity: 1; */
 `;
 
 const CardImg = styled.img`
   /* flex:1; */
-  width: 100%;
-  object-fit: cover;
+  /* width: 100%; */
+  max-height: calc(100vh - 80px);
+  object-fit: contain;
+  height:fit-content;
   border-radius:10px;
 `;
 
@@ -210,4 +214,14 @@ const Info = styled.div`
   display: flex;
   flex-direction: row;
   justify-content: space-around;
+  height: fit-content;
+  object-fit: cover;
+`;
+
+const GameBtns = styled(UnstyledButton)`
+  background:#add5e1;
+  border-radius: 20px;
+  box-shadow: 0px 0 2px #add5e1 inset, 0 0 2px #add5e1;
+  padding: 5px;
+  font-size: 20px;
 `;

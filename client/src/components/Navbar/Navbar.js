@@ -14,6 +14,7 @@ import {
 } from 'react-redux';
 
 import { AuthContext } from '../../components/AuthContext/AuthContext';
+import UnstyledButton from '../UnstyledButton';
 
 import {
   PLAYER_COLORS,
@@ -53,7 +54,7 @@ const Navbar = () => {
     <Wrapper color={navbarColor}>
       <Title
         onClick={()=>setDropdownFlag(true)}
-      >Dixit!</Title>
+      >Not-Dixit!</Title>
       <GameInfo>
         {(gameData.status!=='waiting' && gameData.status !== "waiting-to-start") && (roundData.isMyTurn 
           ? (<ActivePlayerIsMe>IT'S YOUR TURN - {roundData.status==="submitting-titled-card"
@@ -74,20 +75,20 @@ const Navbar = () => {
             </ActivePlayer>))}
         {roundData.titledCard.title ? <div>card Title: {roundData.titledCard.title}</div>: null}
       </GameInfo>
-      <UserInfoBox>
+      <UserInfoBox data-css='user-info'>
         {currentUser.info.email 
           ? (<>
-            <button
+            <SignOutBtn
               onClick={()=>handleSignOut()}
-            >Sign Out</button>
+            >Sign Out</SignOutBtn>
             {currentUser.info.photoURL 
               ? <Link to='/user-profile'><UserAvatar src={currentUser.info.photoURL} /></Link>
               : <Initials><p>{getInitial()}</p></Initials>}
           </>)
           : (<>
-            <SignOutBtn
+            <SignInBtn data-css='sign-out-btn'
               onClick={()=>signInWithGoogle()}
-            >Sign In</SignOutBtn>
+            >Sign In</SignInBtn>
           </>)}
       </UserInfoBox>
     </Wrapper>
@@ -102,6 +103,7 @@ const Wrapper = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
+  box-shadow: 0px 0 10px rgba(0, 0, 0, 0.8) inset, 0 0 10px #add5e1;
   
 `;
 
@@ -110,6 +112,7 @@ const Title = styled.div`
   width: fit-content;
   margin-left: 10px;
   font-size: 2rem;
+  font-family: 'Limelight', cursive;
 `;
 
 const GameId = styled.div`
@@ -125,15 +128,29 @@ const UserInfoBox = styled.div`
   width: fit-content;
   display: flex;
   justify-content: space-around;
+  align-items:center;
   position: relative;
   right:0;
 `;
 
-const SignOutBtn = styled.button`
-  margin:0;
-  padding: 0;
-  margin-right: 80px;
-  border:0;
+const SignOutBtn = styled(UnstyledButton)`
+  width: 60px;
+  height: 35px;
+  background-color:#add5e1;
+  border-radius: 15px;
+  color: #e4717a;
+  text-shadow: 0px 0px 2px Limegreen;
+`;
+
+// const SignInBtn = styled.button`
+const SignInBtn = styled(UnstyledButton)`
+  width: 60px;
+  height: 35px;
+  margin-right: 60px;
+  background:#add5e1;
+  border-radius: 15px;
+  color: #e4717a;
+  text-shadow: 0px 0px 2px Limegreen;
 `;
 
 const Initials = styled.div`

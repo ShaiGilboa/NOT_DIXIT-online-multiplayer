@@ -18,6 +18,7 @@ import {
   PLAYER_COLORS,
 } from '../../constants';
 import Chat from '../../components/Chat';
+import UnstyledButton from '../../components/UnstyledButton';
 // TODO: 'start game' firebase listener if you are 'joining-game' (userStatus)
 // TODO: 'start game' function if you are 'creating-game'
 
@@ -79,16 +80,16 @@ const WaitingForOtherUsers = () => {
   return (
     <Wrapper>
       <Info color={PLAYER_COLORS[gameData.turnNumber]}>
-        <div>Friends that want to play with you:</div>
+        <Title>Friends that want to play with you:</Title>
         <ul>
         {playersLoggedOn.map(player=>userInfo.displayName 
-        !== player.displayName && <li key={player.email}>{player.displayName}</li>)}
+        !== player.displayName && <PlayerName key={player.email}>{player.displayName}</PlayerName>)}
         </ul>
         {currentUser.status==='creating-game' 
-          ? <button
+          ? <GameBtns
               onClick={()=>startGame()}
-            >Do You Want To start?</button> 
-          : <p>waiting for host to start the game</p>}
+            >Do You Want To start?</GameBtns> 
+          : <Note>waiting for host to start the game</Note>}
         <GameId>game Id: {gameId}</GameId>
         </Info>
         <Chat />
@@ -112,17 +113,22 @@ const Wrapper = styled.div`
 const Info = styled.div`
   border: 2px solid ${props=>props.color};
   border-radius: 10px;
-  background-color: white;
+  background-color: rgb(200,200,200);
+  position:relative;
+  width:50vh;
+  height:50vh;
+  top: -5vh;
   padding: 10px;
-
-  height: 40vh;
-  width: 30vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+  align-items:center;
 `;
 
 const GameId = styled.h2`
   position: absolute;
   left:15px;
-  bottom:25px;
+  bottom:0;
   margin: 0;
   padding: 2px 10px;
   height: fit-content;
@@ -131,4 +137,34 @@ const GameId = styled.h2`
   border: solid 1px grey;
   color: Azure;
   /* width */
+`;
+
+const PlayerName = styled.li`
+  padding-top: 10px;
+  font-size: 20px;
+  font-family: 'Muli', sans-serif;
+  line-height: 1.3;
+`;
+
+const Title = styled.h1`
+  text-align: center;
+  /* height: 40px; */
+  color: #f5e9ec;
+  font-size: 20px;
+  font-family: 'Limelight', cursive;
+`;
+
+const GameBtns = styled(UnstyledButton)`
+  background:#add5e1;
+  border-radius: 20px;
+  box-shadow: 0px 0 2px #add5e1 inset, 0 0 2px #add5e1;
+  padding: 5px;
+  font-size: 20px;
+`;
+
+const Note = styled.div`
+  padding-top: 10px;
+  line-height: 1.3;
+  font-size:20px;
+  font-family: 'Caveat', cursive;
 `;

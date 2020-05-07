@@ -47,11 +47,7 @@ export const stateDifferentThenDB = (state, db) => {
     if (statePlayerKeys.length !== dbPlayerKeys.length)return true;
     // check all keys in state and db
     for(let stateKey of statePlayerKeys) {
-      console.log('stateKey',stateKey)
-      console.log('state[playerTurn][stateKey]',state[playerTurn][stateKey])
-      console.log('db[playerTurn][stateKey]',db[playerTurn][stateKey])
       if(statePlayerKeys!=='status')if(state[playerTurn][stateKey] !== db[playerTurn][stateKey]){
-        console.log('difference')
         return true}
     }
   }

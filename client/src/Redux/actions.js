@@ -122,3 +122,8 @@ export const addMessageToChat = (message) => ({
   type: 'ADD_MESSAGE_TO_CHAT',
   message,
 })
+
+export const setVotingMessage = (votingMessage) => ({
+  type: 'SET_VOTING_MESSAGE',
+  votingMessage,
+})

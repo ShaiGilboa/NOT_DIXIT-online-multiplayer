@@ -37,7 +37,7 @@ const Chat = () => {
     conversationRef.on('child_added', messageSnapshot => {
       const message = {
         ...messageSnapshot.val(),
-        timestamp: format(messageSnapshot.val().timestamp, 'hh:mm'),
+        timestamp: format(messageSnapshot.val().timestamp, 'HH:mm'),
       }
       dispatch(addMessageToChat(message))
     })
@@ -48,26 +48,27 @@ const Chat = () => {
   },[])
 
   const sendMessage = () =>{
-    const body = {
-      gameId,
-      userEmail: email,
-      displayName,
-      playerTurnNumber: turnNumber,
-      body: message,
-      photoURL,
+    if(message.length){
+      const body = {
+        gameId,
+        userEmail: email,
+        displayName,
+        playerTurnNumber: turnNumber,
+        body: message,
+        photoURL,
+      }
+      fetch('/send-message', {
+        method: 'PUT',
+        headers: {
+          "Content-Type": "application/json",
+          "Accept": "application/json"
+        },
+        body: JSON.stringify(body),
+      })
+        .then(setMessage(''))
+        .catch(err=>console.log('err in sending message',err))
     }
-    console.log('sned')
-  fetch('/send-message', {
-    method: 'PUT',
-    headers: {
-      "Content-Type": "application/json",
-      "Accept": "application/json"
-    },
-    body: JSON.stringify(body),
-  })
-    .then(setMessage(''))
-    .catch(err=>console.log('err in sending message',err))
-  }
+    }
 
   // if scrollHeight - scrollTop === clientHeight then we are at the bottom
   const scrollHandler = (event) => {
@@ -83,7 +84,6 @@ const Chat = () => {
     }
   },[conversation])
 
-  console.log('autoScroll',autoScroll)
   return (
     <Wrapper minFlag={minFlag} color={PLAYER_COLORS[turnNumber]}>
       <Bar color={PLAYER_COLORS[turnNumber]}
@@ -97,7 +97,7 @@ const Chat = () => {
       ref={messagesRef}
       onScroll={scrollHandler}
       >
-        {conversation.map(chatMessage=><ChatMessage body={chatMessage.body} photoURL={chatMessage.photoURL} playerTurn={chatMessage.playerTurnNumber} timestamp={chatMessage.timestamp} />)}
+        {conversation.map(chatMessage=><ChatMessage key={chatMessage.timestamp} body={chatMessage.body} photoURL={chatMessage.photoURL} playerTurn={chatMessage.playerTurnNumber} timestamp={chatMessage.timestamp} />)}
       </MessagesContainer>
       <Footer minFlag={minFlag}
         onSubmit={(event)=>{
@@ -105,7 +105,7 @@ const Chat = () => {
           sendMessage()
         }}
       >
-        <label for='chat-message'/>
+        <label htmlFor='chat-message'/>
         <MessageInput type="text" id='chat-message' name='chat-message' rows='2'
           onChange={(event)=>setMessage(event.target.value)}
           value={message}
@@ -135,7 +135,7 @@ const Wrapper = styled.div`
 const Bar = styled.div`
   background-color: ${props=>props.color}80;
   text-align: right;
-  padding-right:10px;
+  padding: 2px 10px;
   &:hover{
     cursor: pointer;
   }
@@ -151,10 +151,11 @@ const MessagesContainer = styled.div`
 `;
 
 const Footer = styled.form`
-  display: flex;
+  /* display: flex; */
   padding: 2px;
   background-color: rgba(0,0,0,0.4);
-  display: ${props=>props.minFlag ? 'none' : 'block'};
+  display: ${props=>props.minFlag ? 'none' : 'flex'};
+  align-items: center;
 `;
 
 const SendBtn = styled.button`

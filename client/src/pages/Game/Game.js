@@ -41,14 +41,17 @@ import {
   setPlayers,
   setActivePlayer,
   clearTitledCard,
+  setVotingMessage,
 } from '../../Redux/actions';
 
 import CardInHand from '../../components/CardInHand';
 import ChosenCardModal from '../../components/ChosenCardModal';
-import AllPlayedCards from '../../components/AllPlayedCards';
 import CardToVoteOn from '../../components/CardToVoteOn';
 import ScoreBoard from '../../components/ScoreBoard';
 import PlayerToken from '../../components/PlayerToken';
+import Chat from '../../components/Chat';
+import UnstyledButton from '../../components/UnstyledButton';
+
 
 const Game = () => {
   const dispatch = useDispatch()
@@ -70,7 +73,7 @@ const Game = () => {
   })
 
   const [submissionsMadeInDB, setSubmissionsMadeInDB] = useState(0);
-  const [votingMessage, setVotingMessage] = useState([])
+  // const [votingMessage, setVotingMessage] = useState([])
   const [matchCardModalFlag, setMatchCardModalFlag] = useState(false)
 
   // set playerColor based on turn number
@@ -194,11 +197,10 @@ const Game = () => {
           dispatch(updateVotesInSubmission(cards))
         })
         // end of game
-        dispatch(setGameStatus('end-of-round'))
-        const votingMessageRef = firebase.database().ref(`currentGames/${gameId}/round/votingMessage`)
-        votingMessageRef.once('value', votingMessageSnapshot => {
-          setVotingMessage(votingMessageSnapshot.val())
+        firebase.database().ref(`currentGames/${gameId}/round`).once('value', votingMessageSnapshot => {
+          dispatch(setVotingMessage(votingMessageSnapshot.val().votingMessage))
         })
+          .then(dispatch(setGameStatus('end-of-round')))
         }
     })
     
@@ -238,6 +240,7 @@ const Game = () => {
   const nextPrepRound = () => {
     // all player need to draw a new card
     dispatch(changeRoundStatus('starting-new-round'))
+    dispatch(setVotingMessage([]))
     const body = {
       gameId,
       playerTurn: gameData.turnNumber,
@@ -282,6 +285,7 @@ const Game = () => {
       });
     }
   }
+  // console.log('votingMessage',votingMessage)
 
   return (
     <Wrapper data-css='cards in hand'>
@@ -289,31 +293,30 @@ const Game = () => {
         chosenCard={chosenCard}
         setChosenCardModalFlag={setChosenCardModalFlag}
       />}
-      {titledCard.title && (<AllPlayedCards/>)}
-      <ScoreBoard players={players} votingMessage={votingMessage}/>
-      {roundData.status === 'waiting-for-other-submissions' && <div>waiting-for-other-submissions</div>}
+      {/* {roundData.status === 'waiting-for-other-submissions' && <div>waiting-for-other-submissions</div>} */}
       {(roundData.status === 'voting' || roundData.status === 'waiting-for-other-votes' || roundData.status==='scores') && (
         <VotingWrapper>
           {roundData.submissionsArr.map(card=>(
           <Section key={card.id}>
-            <TokensWrapper data-css="tokensWrapper">
-              {gameData.status==='end-of-round' && <div><span>submitted by:<PlayerToken data-css='token' color={PLAYER_COLORS[card.submittedBy]} /></span></div>}
-            </TokensWrapper>
             <CardToVoteOn
+            key={card.id}
             id={card.id}
             img={card.imgSrc}
             onClick={clickOnCardToVote}
+            showBorderFlag={gameData.status==='end-of-round'}
+            color={PLAYER_COLORS[card.submittedBy]}
             />
             <TokensWrapper data-css="tokensWrapper">
-              {gameData.status==='end-of-round' && card.votesByPlayerTurn.map(voter => <PlayerToken data-css='token' color={PLAYER_COLORS[voter]} />)}
+              {gameData.status==='end-of-round' && card.votesByPlayerTurn.map(voter => <PlayerToken key={voter} data-css='token' color={PLAYER_COLORS[voter]} />)}
             </TokensWrapper>
-          </Section>)
+          </Section>
+          )
           )}
+          {(gameData.status==='end-of-round' && roundData.status!=='starting-new-round') && <ContinueBtn
+              onClick={()=>nextPrepRound()}
+            >continue?</ContinueBtn>}
         </VotingWrapper>
         )}
-      {gameData.status==='end-of-round' && <button
-          onClick={()=>nextPrepRound()}
-        >continue?</button>}
       <CardsInHand
         color={playerColor}
         >
@@ -326,8 +329,8 @@ const Game = () => {
           setChosenCard={setChosenCard}
           onClick={clickOnCardInHand}
         />)}
-      {gameData.gameId ? <GameId data-css='gameId' color={playerColor}>game id: {gameData.gameId}</GameId>: null}
       </CardsInHand>
+      <Chat/>
     </Wrapper>
     );
 }
@@ -350,6 +353,9 @@ const CardsInHand = styled.div`
   justify-content: center;
   justify-self:center;
   background-color: ${props=>props.color};
+  /* &::before{ */
+    box-shadow:  5px 0 5px 2px #8fb11c , inset 0 0 5px 2px #8fb11c;
+
 `;
 
 const TokensWrapper = styled.div`
@@ -358,21 +364,24 @@ const TokensWrapper = styled.div`
   display: flex;
   flex-direction: row;
   justify-content:center;
-  
+  position:absolute;
 `;
 
 const VotingWrapper = styled.div`
   position: relative;
   display: flex;
   flex-direction: row;
+  top:2vh;
   margin: auto;
   width: 80%;
   justify-content: space-around;
+  height: ${2.5* CARD_IN_HAND_HEIGHT}px;
 `;
 
 const Section = styled.div`
   display: flex;
   flex-direction:column;
+  position:relative;
 `;
 
 const GameId = styled.h2`
@@ -387,4 +396,17 @@ const GameId = styled.h2`
   border: solid 1px grey;
   color: Azure;
   /* width */
+`;
+
+const GameBtns = styled(UnstyledButton)`
+  background:#add5e1;
+  border-radius: 20px;
+  box-shadow: 0px 0 2px #add5e1 inset, 0 0 2px #add5e1;
+  padding: 5px;
+  font-size: 20px;
+`;
+
+const ContinueBtn = styled(GameBtns)`
+  position: absolute;
+  bottom: 0;
 `;

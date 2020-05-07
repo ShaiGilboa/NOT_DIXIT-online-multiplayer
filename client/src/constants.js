@@ -1,12 +1,12 @@
 export const CARD_IN_HAND_WIDTH = 110
 export const CARD_IN_HAND_HEIGHT = 175
 export const PLAYER_COLORS = {
-  0: '#800000',
+  0: '#800000', // maroon 
   1: '#4682B4', // steel blue
   2: '#228B22', // green
   3: '#DAA520', // goldenrod
   4: '#b785a7', // purple
-  5: '#FFA07A', // lightslamon
+  5: '#FFA07A', // light salmon
   6: '#778899', // slate grey
   7: '#483D8B', // dark slate blue
 }

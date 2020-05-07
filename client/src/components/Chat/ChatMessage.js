@@ -12,26 +12,30 @@ import {
 
 const SentMessage = ({message, photoURL, color, timestamp}) => {
     return (
+    <div style={{
+      display:'flex', flexDirection: 'row-reverse',
+      paddingTop: '3px'
+      }}>
         <SentWrapper>
-            <div className={`content`}>
+            <Content color={color}>
                 <p className='message message-received'>{message}</p>
-                {/* <TipSent className='tip-sent'/> */}
-                {/* <img src={TipSent} alt='tip-sent' className='tip-sent' /> */}
-                <Timestamp>{timestamp}</Timestamp>
-            </div>
+            </Content>
+            <Timestamp>{timestamp}</Timestamp>
         </SentWrapper>
+    </div>
     )
 }
 
 const ReceivedMessage = ({message, photoURL, color, timestamp}) => {
     return (
         <ReceivedWrapper>
+          <div style={{display: 'flex', flexDirection:'column', justifyContent:'space-around', padding:'3px 2px'}}>
             <UserPhoto src={photoURL} alt='user-photo'/>
-            <div>
+            <Timestamp>{timestamp}</Timestamp>
+          </div>
+            <Content color={color}>
                 <p className='message message-sent'>{message}</p>
-                {/* <TipReceived className='tip-received '/> */}
-                <Timestamp>{timestamp}</Timestamp>
-            </div>
+            </Content>
         </ReceivedWrapper>
     )
 }
@@ -59,23 +63,37 @@ const ReceivedWrapper = styled.div`
   display: flex;
   flex-direction: row;
   justify-content: flex-start;
+  text-align: left;
+  align-items: center;
+  margin-top:3px;
 `;
 
 const SentWrapper = styled.div`
-  width: 100%;
   display: flex;
-  flex-direction: row;
+  flex-direction: column;
   justify-content: flex-end;
+  text-align: right;
+  /* align-items: baseline; */
+  /* margin-top:3px; */
+  /* margin: 3px 0 0 auto; */
 `;
 
 const Timestamp = styled.span`
   color: grey;
   margin: 0;
   padding: 0;
+  font-size:8px;
 `;
 
 const UserPhoto = styled.img`
   border-radius: 50%;
   width: 20px;
   height: 20px;
+`;
+
+const Content = styled.div`
+  background-color: ${props=>props.color}80;
+  border-radius: 5px;
+  padding:2px;
+  height: fit-content;
 `;

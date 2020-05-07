@@ -13,11 +13,15 @@ const CardToVoteOn = ({
   id,
   img,
   onClick,
+  color,
+  showBorderFlag,
 }) => {
   return (
     <CardWrapper
       src={img}
       onClick={(event)=>onClick(id, img)}
+      showBorderFlag={showBorderFlag}
+      color={color}
     >
     </CardWrapper>
     );
@@ -30,7 +34,7 @@ const zoom = keyframes`
     transform: translateY(0) scale(1);
   }
   to {
-    transform: translateY(20px) scale(2.4);
+    transform: translateY(60px) scale(2.7);
     z-index: 10;
   }
 `;
@@ -44,6 +48,7 @@ const CardWrapper = styled.img`
   object-fit: cover;
   position: relative;
   transition: 5s ease-in-out linear;
+  border: 4px solid ${props=>props.showBorderFlag ? props.color : 'transparent'};
   &:hover {
     animation: ${zoom} 500ms ease-in forwards;
     cursor:pointer;

@@ -31,7 +31,6 @@ import {
 
 import CardInHand from '../../components/CardInHand';
 import ChosenCardModal from '../../components/ChosenCardModal';
-import AllPlayedCards from '../../components/AllPlayedCards';
 import CardToVoteOn from '../../components/CardToVoteOn';
 import ScoreBoard from '../../components/ScoreBoard'
 
@@ -299,7 +298,6 @@ const Game = () => {
         chosenCard={chosenCard}
         setChosenCardModalFlag={setChosenCardModalFlag}
       />}
-      {titledCard.title && (<AllPlayedCards/>)}
       <p>isMyTurn: {`${isMyTurn}`}</p>
       <ScoreBoard players={players} votingMessage={votingMessage}/>
       {roundData.status === 'waiting-for-other-submissions' && <div>waiting-for-other-submissions</div>}

@@ -72,7 +72,7 @@ admin.initializeApp({
   databaseURL: process.env.FB_DATABASE_URL,
 });
 const db = admin.database();
-// db.ref('currentGames').remove()
+// db.ref('currentChats').remove()
 
 // -- deals with new VS returning users, changes status
 // post: req.body{}
