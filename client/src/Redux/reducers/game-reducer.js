@@ -61,6 +61,10 @@ export default function  currentUserReducer(state = initialState, action) {
       return produce(state, draftState => {
         draftState.votingMessage = action.votingMessage;
       })
+    case 'SET_SCORE':
+      return produce(state, draftState => {
+        draftState.score = action.score;
+      })
     default:
       return state;
   }

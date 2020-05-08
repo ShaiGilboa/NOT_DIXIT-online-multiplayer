@@ -20,6 +20,7 @@ const {
   getSubmissionArrHandler,
   startGameHandler,
   sendMessageHandler,
+  gameOverHandler,
 } = require('./handlers');
 
 const PORT = process.env.PORT || 4000;
@@ -56,5 +57,6 @@ express()
   .get('/get-submission-array/:gameId', getSubmissionArrHandler)
   .patch('/start-game', startGameHandler)
   .put('/send-message', sendMessageHandler)
+  .patch('/game-over/:playerStatus', gameOverHandler)
 
   .listen(PORT, () => console.log(`Listening on port ${PORT}`));

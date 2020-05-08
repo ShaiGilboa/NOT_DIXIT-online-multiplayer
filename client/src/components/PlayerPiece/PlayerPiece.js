@@ -22,7 +22,7 @@ const PlayerPiece = ({filter, score, playerTurn, fill}) => {
   const [currentScore, setCurrentScore] = useState(0)
   useEffect(()=>{
     if(score!==currentScore){
-      setCurrentScore(score)
+      setCurrentScore(Math.min(score, 30))
     }
   },[score])
 

@@ -26,11 +26,22 @@ const SentMessage = ({message, photoURL, color, timestamp}) => {
     )
 }
 
-const ReceivedMessage = ({message, photoURL, color, timestamp}) => {
+const ReceivedMessage = ({message, photoURL, color, timestamp, displayName}) => {
+    const [imgError, setImgError] = useState(false);
+
+    const getInitial = () =>{
+    const name = displayName
+    const nameArr = name.split(' ');
+    const initials = nameArr.map(string=>string.charAt(0).toUpperCase()).join(' ')
+    return initials
+  }
+
     return (
         <ReceivedWrapper>
           <div style={{display: 'flex', flexDirection:'column', justifyContent:'space-around', padding:'3px 2px'}}>
-            <UserPhoto src={photoURL} alt='user-photo'/>
+            {imgError
+              ? <PlayerTurn color={color}>{getInitial()}</PlayerTurn>
+              : <UserPhoto src={photoURL} alt='user-photo' onError={()=>setImgError(true)}/>}
             <Timestamp>{timestamp}</Timestamp>
           </div>
             <Content color={color}>
@@ -40,14 +51,14 @@ const ReceivedMessage = ({message, photoURL, color, timestamp}) => {
     )
 }
 
-const ChatMessage = ({body, playerTurn, photoURL ,timestamp}) => {
+const ChatMessage = ({body, playerTurn, photoURL ,timestamp,displayName}) => {
 
   const userInfo = useSelector(state => state.currentUser.info)
   const gameData = useSelector(state => state.gameData)
   return (<>
     {playerTurn === gameData.turnNumber
       ? <SentMessage message={body} photoURL={photoURL} color={PLAYER_COLORS[playerTurn]} timestamp={timestamp}/>
-      : <ReceivedMessage message={body} photoURL={photoURL} color={PLAYER_COLORS[playerTurn]} timestamp={timestamp}/>
+      : <ReceivedMessage message={body} photoURL={photoURL} color={PLAYER_COLORS[playerTurn]} timestamp={timestamp} displayName={displayName}/>
     }
     </>);
 }
@@ -73,9 +84,6 @@ const SentWrapper = styled.div`
   flex-direction: column;
   justify-content: flex-end;
   text-align: right;
-  /* align-items: baseline; */
-  /* margin-top:3px; */
-  /* margin: 3px 0 0 auto; */
 `;
 
 const Timestamp = styled.span`
@@ -96,4 +104,16 @@ const Content = styled.div`
   border-radius: 5px;
   padding:2px;
   height: fit-content;
+`;
+
+const PlayerTurn = styled.div`
+  margin: 0;
+  padding: 0;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  font-size: 10px;
+  text-align: center;
+  padding-top: 5px;
+  background-color: ${props=>props.color}60;
 `;

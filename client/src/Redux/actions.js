@@ -127,3 +127,8 @@ export const setVotingMessage = (votingMessage) => ({
   type: 'SET_VOTING_MESSAGE',
   votingMessage,
 })
+
+export const setScore = (score) => ({
+  type: 'SET_SCORE',
+  score,
+})

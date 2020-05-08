@@ -62,6 +62,7 @@ const Game = () => {
   const roundData = useSelector(state=>state.roundData)
   const {submissionsArr} = roundData
   const {hand, titledCard, isMyTurn} = roundData
+  const userId = useSelector(state=>state.currentUser.info.id)
   const email = useSelector(state=>state.currentUser.info.email)
   const [playerColor, setPlayerColor] = useState('')
   // const [players, setPlayers] = useState([]);
@@ -120,6 +121,25 @@ const Game = () => {
             body: JSON.stringify(body)
           })
           .catch(err=>console.log('err in starting next round',err))
+        }
+      })
+
+      const gameStatus = firebase.database().ref(`currentGames/${gameId}/status`)
+      gameStatus.on('value', gameStatusSnapshot => {
+        if(gameStatusSnapshot.val()){
+          console.log('gameStatusSnapshot.val()',gameStatusSnapshot.val())
+          if(gameStatusSnapshot.val() === 'over') {
+            dispatch(setGameStatus('loser'))
+            fetch('/game-over/loser', {
+              method: "PATCH",
+              headers: {
+              "Content-Type": "application/json",
+              "Accept": "application/json"
+              },
+              body: JSON.stringify({gameId, userId})
+            })
+            .catch(err=>console.log('err in game-over:loser',err))
+          }
         }
       })
 
@@ -196,11 +216,11 @@ const Game = () => {
           const cards = cardsSnapshot.val()
           dispatch(updateVotesInSubmission(cards))
         })
-        // end of game
+        // end of round
         firebase.database().ref(`currentGames/${gameId}/round`).once('value', votingMessageSnapshot => {
           dispatch(setVotingMessage(votingMessageSnapshot.val().votingMessage))
         })
-          .then(dispatch(setGameStatus('end-of-round')))
+          if(gameData.status!=='winner' && gameData.status!=='loser')dispatch(setGameStatus('end-of-round'))
         }
     })
     
@@ -215,9 +235,24 @@ const Game = () => {
       roundStatusRef.off()
     };
   },[roundData.status])
+  
+  useEffect(()=>{
+    if(gameData.score>=30){
+      dispatch(setGameStatus('winner'))
+      fetch('/game-over/winner', {
+          method: "PATCH",
+          headers: {
+          "Content-Type": "application/json",
+          "Accept": "application/json"
+          },
+          body: JSON.stringify({gameId, userId})
+        })
+        .catch(err=>console.log('err in game-over:winner',err))
+    }
+  },[gameData.score])
 
   const scoring = (cardsInPlay, totalVotes, gameId) => {
-    console.log('fetch - scoring')
+    // console.log('fetch - scoring')
     const adjustedCards = JSON.parse(JSON.stringify(cardsInPlay))
     Object.keys(adjustedCards).map(cardId=>adjustedCards[cardId].imgSrc = ""+ cardId)
     const body = {
@@ -287,13 +322,16 @@ const Game = () => {
   }
   // console.log('votingMessage',votingMessage)
 
-  return (
-    <Wrapper data-css='cards in hand'>
+  return (<>
+    {gameData.status === "winner"
+      ? <div>winner</div>
+      : (gameData.status === "loser" 
+          ? <div>loser</div>
+          : (<Wrapper data-css='cards in hand'>
       {chosenCardModalFlag && <ChosenCardModal
         chosenCard={chosenCard}
         setChosenCardModalFlag={setChosenCardModalFlag}
       />}
-      {/* {roundData.status === 'waiting-for-other-submissions' && <div>waiting-for-other-submissions</div>} */}
       {(roundData.status === 'voting' || roundData.status === 'waiting-for-other-votes' || roundData.status==='scores') && (
         <VotingWrapper>
           {roundData.submissionsArr.map(card=>(
@@ -317,7 +355,7 @@ const Game = () => {
             >continue?</ContinueBtn>}
         </VotingWrapper>
         )}
-      <CardsInHand
+      {(gameData.status !== 'winner' || gameData.status !== 'loser') && <CardsInHand
         color={playerColor}
         >
         {hand.length && hand.map((card, index)=><CardInHand
@@ -329,10 +367,10 @@ const Game = () => {
           setChosenCard={setChosenCard}
           onClick={clickOnCardInHand}
         />)}
-      </CardsInHand>
+      </CardsInHand>}
       <Chat/>
-    </Wrapper>
-    );
+    </Wrapper>))}
+    </>);
 }
 
 export default Game;

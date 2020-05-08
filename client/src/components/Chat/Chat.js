@@ -37,7 +37,6 @@ const Chat = () => {
     conversationRef.on('child_added', messageSnapshot => {
       const message = {
         ...messageSnapshot.val(),
-        timestamp: format(messageSnapshot.val().timestamp, 'HH:mm'),
       }
       dispatch(addMessageToChat(message))
     })
@@ -97,7 +96,13 @@ const Chat = () => {
       ref={messagesRef}
       onScroll={scrollHandler}
       >
-        {conversation.map(chatMessage=><ChatMessage key={chatMessage.timestamp} body={chatMessage.body} photoURL={chatMessage.photoURL} playerTurn={chatMessage.playerTurnNumber} timestamp={chatMessage.timestamp} />)}
+        {conversation.map(chatMessage=><ChatMessage key={chatMessage.timestamp}
+          body={chatMessage.body}
+          photoURL={chatMessage.photoURL}
+          playerTurn={chatMessage.playerTurnNumber}
+          timestamp={format(chatMessage.timestamp, 'HH:mm')}
+          displayName={displayName}
+        />)}
       </MessagesContainer>
       <Footer minFlag={minFlag}
         onSubmit={(event)=>{
@@ -171,7 +176,7 @@ const SendBtn = styled.button`
   padding: 0;
 `;
 
-const MessageInput = styled.textarea`
+const MessageInput = styled.input`
   resize: none;
   width: calc(100% - 30px);
   overflow-y: auto;

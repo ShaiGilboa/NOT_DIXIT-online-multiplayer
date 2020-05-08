@@ -1,6 +1,7 @@
 import React, {
   useEffect,
   useState,
+  useRef,
 } from 'react';
 import styled from 'styled-components';
 
@@ -34,7 +35,7 @@ const ChosenCardModal = ({
     info,
   } = useSelector(state=>state.currentUser)
   const [title, setTitle] = useState('')
-
+  const titleInputRef = useRef();
   const valueChange = (event) => {
     setTitle(event.target.value)
   }
@@ -122,6 +123,10 @@ const ChosenCardModal = ({
       dispatch(changeRoundStatus('waiting-for-other-votes'))
     }
 
+  useEffect(()=>{
+    if(roundData.status==='submitting-titled-card')titleInputRef.current.focus()
+  },[roundData.status])
+
   const cardChosen = (event) => {
     event.preventDefault();
     if(title.length>0){
@@ -156,6 +161,7 @@ const ChosenCardModal = ({
               <label htmlFor="title">What title? </label>
               <input type="text" id="title" name="title" placeholder="title" value={title}
                 onChange={valueChange}
+                ref={titleInputRef}
               />
               </>)
               : (

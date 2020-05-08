@@ -123,11 +123,11 @@ const signInHandler = async (req, res) => {
 }
 
 // removes the 'currentGame' from the useNode, and added the game to the 'past games' node.
-const GameOverHandle = async (userId, gameId) => {
+const gameOverHandle = async (userId, gameId) => {
   // push the last game to 'pastGames'
   db.ref('currentGames/' + gameId).once('value', currentGameSnapshot => { // changed .on to .once
     db.ref('appUsers/'+userId+'/pastGames').update({
-      [gameId]:currentGameSnapshot.val(),
+      [gameId]:{...currentGameSnapshot.val(), playerStatus: 'loser'},
     })
   })
   // removing the 'currentGame'
@@ -146,7 +146,7 @@ const signOutHandler = async (req, res) => {
         isActive: false,
       })
       const currentGameId = snapshot.val().currentGame
-      await GameOverHandle(snapshot.key, currentGameId)
+      await   gameOverHandle(snapshot.key, currentGameId)
     })
     res.status(204).json({status:204})
   } catch (err) {
@@ -463,6 +463,25 @@ const postMessageOnChat = async (gameId, userEmail, displayName, photoURL, playe
   }
 }
 
+const gameFinished = async (gameId, userId, playerStatus) => {
+  console.log('playerStatus',playerStatus)
+  try {
+    await db.ref('currentGames/' + gameId).once('value', currentGameSnapshot => { 
+    db.ref('appUsers/'+userId+'/pastGames').update({
+        [gameId]:{...currentGameSnapshot.val(), playerStatus},
+      })
+    })
+    // removing the 'currentGame'
+    await db.ref('appUsers/'+userId+'/currentGame').remove()
+    // changing the status of the current game
+    await db.ref(`currentGames/${gameId}`).update({
+      status: 'over',
+    })
+  } catch (err) {
+    console.log('err',err)
+  }
+}
+
 module.exports = {
   updateScoresInDB,
   sendVoteToDB,
@@ -471,7 +490,7 @@ module.exports = {
   joinFirebaseGame,
   createNewGameOnFirebase,
   signOutHandler,
-  GameOverHandle,
+  gameOverHandle,
   signInHandler,
   getNewDeck,
   getPlayersSnapshot,
@@ -486,4 +505,5 @@ module.exports = {
   startNewChat,
   joinChat,
   postMessageOnChat,
+  gameFinished,
 }

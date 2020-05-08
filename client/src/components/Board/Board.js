@@ -10,7 +10,8 @@ import Grass from '../../assets/grass.png'
 // import BackgroundImg from '../../assets/background.jpg';
 
 import {
-  useSelector
+  useSelector,
+  useDispatch,
 } from 'react-redux'
 
 import {
@@ -20,12 +21,16 @@ import {
   PLAYER_COLORS,
 } from '../../constants';
 
+import { setScore } from '../../Redux/actions'
+
 import PlayerPiece from '../PlayerPiece';
 import ScoreBoard from '../ScoreBoard';
 
 const Board = () => {
+  const dispatch = useDispatch()
   const gameData = useSelector(state=>state.gameData)
   const players = gameData.players
+  const turnNumber = gameData.turnNumber
   const [playersScores, setPlayersScores] = useState([{}])
   const [votingMessage, setVotingMessage] = useState([])
   
@@ -57,6 +62,7 @@ const Board = () => {
           }
       })
       if(change){
+        dispatch(setScore(players[turnNumber].score))
         setPlayersScores(extractRelevantChanges(players))
         }
     }

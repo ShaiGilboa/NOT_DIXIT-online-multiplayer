@@ -8,7 +8,7 @@ const {
   joinFirebaseGame,
   createNewGameOnFirebase,
   signOutHandler,
-  GameOverHandle, // TODO:
+  gameOverHandle, // TODO:
   signInHandler,
   getNewDeck,
   getPlayersSnapshot,
@@ -23,6 +23,7 @@ const {
   startNewChat,
   joinChat,
   postMessageOnChat,
+  gameFinished,
 } = require('./helpers/firebaseHandlers');
 
 const {
@@ -159,7 +160,6 @@ const scoringHandler = async (req, res) => {
   try {
     const playersSnapshot = await getPlayersSnapshot(gameId)
     const players = playersSnapshot.val()
-    console.log('players pre',players)
     const cardIds = Object.keys(cardsInPlay)
     cardIds.forEach(id=>cardsInPlay[id].imgSrc=''+id)
     // const cards = cards64.map(card64 => card64.imgSrc=''+card64.id)
@@ -168,6 +168,9 @@ const scoringHandler = async (req, res) => {
     const titledCard = cards.find(card=>card.status==='titledCard')
     const submissions = cards.filter(card=>card.status!=='titledCard')
     const votingMessage = []
+    const winnersMessage = []
+    let winnerId = null;
+    let winningAmount = 0;
     // some guesses are right
     if(titledCard.votesByPlayerTurn){
       // all guesses are right
@@ -194,9 +197,23 @@ const scoringHandler = async (req, res) => {
     }
     players.forEach(player=>player.status = 'scores')
     console.log('players post',players)
-    await setVotingMessage(gameId, votingMessage)
-    await updateScoresInDB(gameId, players)
-    await updateRoundStatus(gameId, 'scores')
+    players.forEach(player=>{if(player.score>=30) {
+      winnersMessage.push(`${player.displayName} is a winner! with ${player.score} points`)
+      if(player.score>winningAmount){
+        winningAmount = player.score;
+        winnerId = player.id
+      }
+    }})
+    if(winnersMessage.length){
+      await setVotingMessage(gameId, winnersMessage)
+      await updateScoresInDB(gameId, players)
+      await updateRoundStatus(gameId, 'scores')
+      await gameFinished(gameId, winnerId, 'winner')
+    } else {
+      await setVotingMessage(gameId, votingMessage)
+      await updateScoresInDB(gameId, players)
+      await updateRoundStatus(gameId, 'scores')
+    }
       res.status(204).send()
   } catch (err) {
     console.log('err',err)
@@ -275,6 +292,21 @@ const sendMessageHandler = async (req, res) => {
   }
 }
 
+// sets the game status to 'over'
+// PUT: {playerStatus} req.params
+// {gameId, userId} req.body
+const gameOverHandler = async (req, res) => {
+  const {playerStatus} = req.params;
+  const {gameId, userId} = req.body;
+  console.log('playerS',playerStatus)
+  try {
+    await gameFinished(gameId, userId, playerStatus) // playerStatus = 'winner' || 'loser'
+    res.status(204).send();
+  } catch (err) {
+    console.log('err',err)
+  }
+}
+
 module.exports = {
   signInHandler,
   signOutHandler,
@@ -289,4 +321,5 @@ module.exports = {
   getSubmissionArrHandler,
   startGameHandler,
   sendMessageHandler,
+  gameOverHandler,
 }
