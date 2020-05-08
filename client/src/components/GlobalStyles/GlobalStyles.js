@@ -3,7 +3,7 @@ import { createGlobalStyle } from 'styled-components';
 const  GlobalStyles = createGlobalStyle`
 
 * {
-      font-family: 'Roboto', sans-serif;
+			font-family: 'Muli', sans-serif;
       text-decoration: none;
     }
 

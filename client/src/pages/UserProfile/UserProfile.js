@@ -33,12 +33,12 @@ const UserProfile = ({toggle}) => {
   useEffect(()=>{
     setFilter(turnNumber ? PLAYER_COLORS_FILTERS[turnNumber] : 'invert(95%) sepia(10%) saturate(1134%) hue-rotate(212deg) brightness(86%) contrast(93%)')
   },[turnNumber])
-  console.log('filter',filter)
+  // console.log('filter',filter)
   return (
     <Wrapper
       onClick={()=>toggle(false)}
     >
-      <Container fill={filter}>
+      <Container >
         <BunnyBackground src={Bunny} style={{filter}}/>
         <Info>
           <Name>{userProfile.displayName}</Name>
@@ -87,16 +87,16 @@ const Container = styled.div`
 const Info = styled.div`
   position: relative;
   top: -128px;
-  left: 86px;
+  left: 80px;
 `
 
 const BunnyBackground = styled.img`
   width: 100%;
-  height: fit-content;
+  height: 295px;
   object-fit: contain;
   transform: scaleX(-1);
   position: relative;
-  bottom: -6px;
+  bottom: 0px;
   `;
 
 const Name = styled.div`

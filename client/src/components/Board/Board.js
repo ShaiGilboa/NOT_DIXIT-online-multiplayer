@@ -31,6 +31,7 @@ const Board = () => {
   const gameData = useSelector(state=>state.gameData)
   const players = gameData.players
   const turnNumber = gameData.turnNumber
+  const roundStatus = useSelector(state=>state.roundData.status)
   const [playersScores, setPlayersScores] = useState([{}])
   const [votingMessage, setVotingMessage] = useState([])
   
@@ -42,7 +43,7 @@ const Board = () => {
   useEffect(()=>{
     const votingMessageRef = firebase.database().ref(`currentGames/${gameData.gameId}/round/votingMessage`)
     votingMessageRef.once('value', votingMessageSnapshot => {
-      setVotingMessage(votingMessageSnapshot.val())
+      if(votingMessageSnapshot.val())setVotingMessage(votingMessageSnapshot.val())
     })
     return () => {
       const votingMessageRef = firebase.database().ref(`currentGames/${gameData.gameId}/round/votingMessage`)
@@ -68,13 +69,19 @@ const Board = () => {
     }
   },[players])
 
+  useEffect(()=>{
+    if(roundStatus === 'waiting-for-title' || roundStatus==='submitting-titled-card'){
+      setVotingMessage([])
+    }
+  },[roundStatus])
+
   return (
     <Wrapper data-css='board'>
       <Boards
         data-css='grid'
       >
         {gameData.stauts !== 'waiting' && gameData !== 'creating-game' && gameData !== 'waiting-to-start' && playersScores.map((player, index)=><PlayerPiece key={index} filter={PLAYER_COLORS_FILTERS[index]} score={player.score} playerTurn={index} fill={PLAYER_COLORS[index]}/>) }
-        {gameData.status!=='waiting' && <ScoreBoard players={players} votingMessage={gameData.votingMessage} />}
+        {gameData.status!=='waiting' && <ScoreBoard players={players} votingMessage={votingMessage} />}
       </Boards>
 
     </Wrapper> 

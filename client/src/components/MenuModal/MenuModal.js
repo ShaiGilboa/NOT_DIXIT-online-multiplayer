@@ -4,7 +4,7 @@ import React, {
 } from 'react';
 import styled, {keyframes} from 'styled-components';
 
-const MenuModal = ({flag, toggleInstructions, toggleAbout}) => {
+const MenuModal = ({flag, toggleInstructions, toggleAbout, toggleDropdown, startNewGame, joinNewGame}) => {
   const [aboutFlag, setAboutFlag] = useState(false);
 
   const clearFlags = () => {
@@ -13,19 +13,24 @@ const MenuModal = ({flag, toggleInstructions, toggleAbout}) => {
   }
   return (
     <Wrapper flag={flag}
-      onMouseLeave={()=>clearFlags()}
+      // onMouseLeave={()=>clearFlags()}
     >
       <ul>
         <Li
           onClick={()=>toggleInstructions(true)}
-          onMouseLeave={()=>toggleInstructions(false)}
+          onMouseEnter={()=>clearFlags()}
         >Instruction
         </Li>
         <Li
           onClick={()=>toggleAbout(true)}
-          onMouseLeave={()=>toggleAbout(false)}
+          onMouseEnter={()=>toggleAbout(clearFlags)}
         >About</Li>
-        <Li>Start a new game</Li>
+        <Li
+          onClick={()=>startNewGame()}
+        >Start a new game</Li>
+        <Li
+          onClick={()=>joinNewGame()}
+        >Join a new game</Li>
       </ul>
     </Wrapper>
     );
@@ -36,9 +41,9 @@ export default MenuModal;
 const Wrapper = styled.div`
   position: absolute;
   width: 150px;
-  height: ${props=>props.flag ? '120px' : '0px'};
+  height: ${props=>props.flag ? 'fit-content' : '0px'};
   background-color:rgba(255,255,255,0.5);
-  top: 46px;
+  top: 58px;
   transition: all 0.5s ease-in-out;
   left: 0px;
   overflow: hidden;

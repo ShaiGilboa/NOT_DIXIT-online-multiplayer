@@ -24,6 +24,7 @@ import {
   setNewHand,
   newGameId,
   setPlayerTurn,
+  clearChat,
 } from '../../Redux/actions'
 
 const Homepage = () => {
@@ -92,6 +93,7 @@ const Homepage = () => {
     .then(res=>res.json())
     .then(res=>{
       if(res.status===200) {
+        dispatch(clearChat())
         dispatch(setPlayerTurn(res.turnNumber))
         waitingToStart(res.gameId, res.hand);
       } else {

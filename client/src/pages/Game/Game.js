@@ -42,16 +42,19 @@ import {
   setActivePlayer,
   clearTitledCard,
   setVotingMessage,
+  clearChat,
 } from '../../Redux/actions';
 
 import CardInHand from '../../components/CardInHand';
 import ChosenCardModal from '../../components/ChosenCardModal';
-import CardToVoteOn from '../../components/CardToVoteOn';
+// import CardToVoteOn from '../../components/CardToVoteOn';
 import ScoreBoard from '../../components/ScoreBoard';
-import PlayerToken from '../../components/PlayerToken';
+// import PlayerToken from '../../components/PlayerToken';
 import Chat from '../../components/Chat';
 import UnstyledButton from '../../components/UnstyledButton';
-
+import Winner from '../../components/Winner';
+import Loser from '../../components/Loser';
+import VotingWrapper from '../../components/VotingWrapper';
 
 const Game = () => {
   const dispatch = useDispatch()
@@ -76,6 +79,10 @@ const Game = () => {
   const [submissionsMadeInDB, setSubmissionsMadeInDB] = useState(0);
   // const [votingMessage, setVotingMessage] = useState([])
   const [matchCardModalFlag, setMatchCardModalFlag] = useState(false)
+
+  useEffect(()=>{
+    dispatch(clearChat())
+  },[])
 
   // set playerColor based on turn number
   useEffect(()=>{
@@ -122,13 +129,16 @@ const Game = () => {
           })
           .catch(err=>console.log('err in starting next round',err))
         }
-      })
+      }) 
 
       const gameStatus = firebase.database().ref(`currentGames/${gameId}/status`)
       gameStatus.on('value', gameStatusSnapshot => {
         if(gameStatusSnapshot.val()){
-          console.log('gameStatusSnapshot.val()',gameStatusSnapshot.val())
-          if(gameStatusSnapshot.val() === 'over') {
+          console.log('gameData.score pre',gameData.score)
+            console.log('here pre', gameData.status)
+          if(gameStatusSnapshot.val() === 'over'  && gameData.status!=='winner' && gameData.score<30) {
+            console.log('gameData.score post',gameData.score)
+            console.log('here post', gameData.status)
             dispatch(setGameStatus('loser'))
             fetch('/game-over/loser', {
               method: "PATCH",
@@ -146,6 +156,8 @@ const Game = () => {
       return ()=>{
         const playersRef = firebase.database().ref(`currentGames/${gameId}/players`)
         playersRef.off()
+        const gameStatus = firebase.database().ref(`currentGames/${gameId}/status`)
+      gameStatus.off();
       }
   },[gameData.status])
 
@@ -218,9 +230,21 @@ const Game = () => {
         })
         // end of round
         firebase.database().ref(`currentGames/${gameId}/round`).once('value', votingMessageSnapshot => {
-          dispatch(setVotingMessage(votingMessageSnapshot.val().votingMessage))
+          if(votingMessageSnapshot.val())dispatch(setVotingMessage(votingMessageSnapshot.val().votingMessage))
         })
-          if(gameData.status!=='winner' && gameData.status!=='loser')dispatch(setGameStatus('end-of-round'))
+        if(gameData.status!=='winner' || gameData.status!=='loser'){
+          dispatch(setGameStatus('end-of-round'))
+        }
+        } else if(roundStatusSnapshot.val()==='over'){
+          // repopulate the submissionsArr with the votes
+          firebase.database().ref(`currentGames/${gameId}/round/cardsInPlay`).once('value', cardsSnapshot => {
+            const cards = cardsSnapshot.val()
+            dispatch(updateVotesInSubmission(cards))
+          })
+          // end of round
+          firebase.database().ref(`currentGames/${gameId}/round`).once('value', votingMessageSnapshot => {
+            dispatch(setVotingMessage(votingMessageSnapshot.val().votingMessage))
+          })
         }
     })
     
@@ -320,40 +344,48 @@ const Game = () => {
       });
     }
   }
-  // console.log('votingMessage',votingMessage)
 
   return (<>
     {gameData.status === "winner"
-      ? <div>winner</div>
+      ? <Winner>
+          <VotingWrapper submissionsArr={roundData.submissionsArr} gameStatus={gameData.status} roundStatus={roundData.status} nextPrepRound={nextPrepRound} clickOnCardToVote={()=>console.log('nothing')}/>
+      <Chat/>
+        </Winner>
+
       : (gameData.status === "loser" 
-          ? <div>loser</div>
+          ? <Loser>
+              <VotingWrapper submissionsArr={roundData.submissionsArr} gameStatus={gameData.status} roundStatus={roundData.status} nextPrepRound={nextPrepRound} clickOnCardToVote={()=>console.log('nothing')}/>
+      <Chat/>
+
+            </Loser>
           : (<Wrapper data-css='cards in hand'>
       {chosenCardModalFlag && <ChosenCardModal
         chosenCard={chosenCard}
         setChosenCardModalFlag={setChosenCardModalFlag}
       />}
       {(roundData.status === 'voting' || roundData.status === 'waiting-for-other-votes' || roundData.status==='scores') && (
-        <VotingWrapper>
-          {roundData.submissionsArr.map(card=>(
-          <Section key={card.id}>
-            <CardToVoteOn
-            key={card.id}
-            id={card.id}
-            img={card.imgSrc}
-            onClick={clickOnCardToVote}
-            showBorderFlag={gameData.status==='end-of-round'}
-            color={PLAYER_COLORS[card.submittedBy]}
-            />
-            <TokensWrapper data-css="tokensWrapper">
-              {gameData.status==='end-of-round' && card.votesByPlayerTurn.map(voter => <PlayerToken key={voter} data-css='token' color={PLAYER_COLORS[voter]} />)}
-            </TokensWrapper>
-          </Section>
-          )
-          )}
-          {(gameData.status==='end-of-round' && roundData.status!=='starting-new-round') && <ContinueBtn
-              onClick={()=>nextPrepRound()}
-            >continue?</ContinueBtn>}
-        </VotingWrapper>
+        <VotingWrapper submissionsArr={roundData.submissionsArr} gameStatus={gameData.status} roundStatus={roundData.status} nextPrepRound={nextPrepRound} clickOnCardToVote={clickOnCardToVote}/>
+        // <VotingWrapper>
+        //   {roundData.submissionsArr.map(card=>(
+        //   <Section key={card.id}>
+        //     <CardToVoteOn
+        //     key={card.id}
+        //     id={card.id}
+        //     img={card.imgSrc}
+        //     onClick={clickOnCardToVote}
+        //     showBorderFlag={gameData.status==='end-of-round'}
+        //     color={PLAYER_COLORS[card.submittedBy]}
+        //     />
+        //     <TokensWrapper data-css="tokensWrapper">
+        //       {gameData.status==='end-of-round' && card.votesByPlayerTurn.map(voter => <PlayerToken key={voter} data-css='token' color={PLAYER_COLORS[voter]} />)}
+        //     </TokensWrapper>
+        //   </Section>
+        //   )
+        //   )}
+        //   {(gameData.status==='end-of-round' && roundData.status!=='starting-new-round') && <ContinueBtn
+        //       onClick={()=>nextPrepRound()}
+        //     >continue?</ContinueBtn>}
+        // </VotingWrapper>
         )}
       {(gameData.status !== 'winner' || gameData.status !== 'loser') && <CardsInHand
         color={playerColor}
@@ -396,16 +428,16 @@ const CardsInHand = styled.div`
 
 `;
 
-const TokensWrapper = styled.div`
+{/* const TokensWrapper = styled.div`
   height: 120px;
   width: ${CARD_IN_HAND_WIDTH};
   display: flex;
   flex-direction: row;
   justify-content:center;
   position:absolute;
-`;
+`; */}
 
-const VotingWrapper = styled.div`
+{/* const VotingWrapper = styled.div`
   position: relative;
   display: flex;
   flex-direction: row;
@@ -420,7 +452,7 @@ const Section = styled.div`
   display: flex;
   flex-direction:column;
   position:relative;
-`;
+`; */}
 
 const GameId = styled.h2`
   position: absolute;
@@ -444,7 +476,7 @@ const GameBtns = styled(UnstyledButton)`
   font-size: 20px;
 `;
 
-const ContinueBtn = styled(GameBtns)`
-  position: absolute;
-  bottom: 0;
-`;
+// const ContinueBtn = styled(GameBtns)`
+//   position: absolute;
+//   bottom: 0;
+// `;

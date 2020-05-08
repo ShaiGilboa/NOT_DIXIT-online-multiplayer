@@ -13,6 +13,7 @@ import {
 import styled from 'styled-components';
 import {
   setGameStatus,
+  clearChat,
 } from '../../Redux/actions';
 import {
   PLAYER_COLORS,
@@ -30,7 +31,12 @@ const WaitingForOtherUsers = () => {
   const gameId = gameData.gameId 
   const roundData = useSelector(state=>state.roundData)
   const currentUser = useSelector(state=>state.currentUser)
-  const userInfo = currentUser.info
+  const userInfo = currentUser.info;
+
+  useEffect(()=>{
+    dispatch(clearChat())
+  },[])
+
   useEffect(()=>{
     const playersLoggedOnRef = firebase.database().ref(`/currentGames/${gameId}/players`)
     playersLoggedOnRef.on('child_added', playerSnapshot => {

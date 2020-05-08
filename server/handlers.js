@@ -207,7 +207,7 @@ const scoringHandler = async (req, res) => {
     if(winnersMessage.length){
       await setVotingMessage(gameId, winnersMessage)
       await updateScoresInDB(gameId, players)
-      await updateRoundStatus(gameId, 'scores')
+      await updateRoundStatus(gameId, 'over')
       await gameFinished(gameId, winnerId, 'winner')
     } else {
       await setVotingMessage(gameId, votingMessage)

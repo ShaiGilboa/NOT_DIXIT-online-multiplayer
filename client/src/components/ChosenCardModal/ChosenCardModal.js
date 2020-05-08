@@ -171,7 +171,7 @@ const ChosenCardModal = ({
             ? <p>your turn, you cannot vote</p>
             : ((chosenCard && roundData.mySubmission && (chosenCard.id === roundData.mySubmission))
               ? <p>this is your card</p>
-              : <button type="submit">submit</button>)}
+              : <GameBtns type="submit">submit</GameBtns>)}
           {/* </div> */}
         </Info>
         <CardImg src={chosenCard.img} />
@@ -222,6 +222,7 @@ const Info = styled.div`
   justify-content: space-around;
   height: fit-content;
   object-fit: cover;
+  text-align:center;
 `;
 
 const GameBtns = styled(UnstyledButton)`

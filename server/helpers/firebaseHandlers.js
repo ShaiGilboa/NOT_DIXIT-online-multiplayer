@@ -126,9 +126,11 @@ const signInHandler = async (req, res) => {
 const gameOverHandle = async (userId, gameId) => {
   // push the last game to 'pastGames'
   db.ref('currentGames/' + gameId).once('value', currentGameSnapshot => { // changed .on to .once
-    db.ref('appUsers/'+userId+'/pastGames').update({
-      [gameId]:{...currentGameSnapshot.val(), playerStatus: 'loser'},
-    })
+    if(!(db.ref(`appUsers/${userId}/pastGames/${gameId}`)).once('value').val()){
+      db.ref('appUsers/'+userId+'/pastGames').update({
+        [gameId]:{...currentGameSnapshot.val(), playerStatus: 'loser'},
+      })
+    }
   })
   // removing the 'currentGame'
   db.ref('appUsers/'+userId+'/currentGame').remove()

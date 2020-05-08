@@ -17,6 +17,8 @@ import { AuthContext } from '../../components/AuthContext/AuthContext';
 import UnstyledButton from '../UnstyledButton';
 import UserProfile from '../../pages/UserProfile';
 import MenuModal from '../MenuModal';
+import NewGameWarning from '../NewGameWarning';
+import JoinNewGameWarning from '../JoinNewGameWarning';
 
 import {
   PLAYER_COLORS,
@@ -41,6 +43,8 @@ const Navbar = () => {
   const [imgError, setImgError] = useState(false);
   const [aboutFlag, setAboutFlag] = useState(false);
   const [instructionsFlag, setInstructionsFlag] = useState(false);
+  const [newGameWarning, setNewGameWarning] = useState(false)
+  const [joinGameWarning, setJoinNewGameWarning] = useState(false)
 
 
   const getInitial = () =>{
@@ -57,6 +61,20 @@ const Navbar = () => {
     if(!currentUser.info.email)history.push('/')
   },[currentUser])
 
+  const startNewGame = () => {
+    setDropdownFlag(false);
+    setInstructionsFlag(false);
+    setAboutFlag(false);
+    setNewGameWarning(true);
+  }
+
+  const joinNewGame = () => {
+    setDropdownFlag(false);
+    setInstructionsFlag(false);
+    setAboutFlag(false);
+    setJoinNewGameWarning(true);
+  }
+
   return (
     <Wrapper color={navbarColor}>
       <Title
@@ -64,8 +82,8 @@ const Navbar = () => {
         onMouseLeave={()=>setDropdownFlag(false)}
       >
         <TitleName>Not-Dixit!</TitleName>
-        {/* {dropdownFlag && <MenuModal />} */}
-        <Instructions flag={instructionsFlag} data-css='instructions'>
+        {/* <MenuModal /> */}
+        <Instructions flag={instructionsFlag} data-css='instructions' onMouseLeave={()=>setInstructionsFlag(false)}>
                 <InstructionsP>One player is the storyteller for the turn and looks at the images on the 7 cards in her hand. From one of these, she makes up a sentence and submits it.
                 Each other player selects the card in their hands which best matches the sentence.</InstructionsP>
                 <InstructionsP>All pictures are shown face up and every player has to bet upon which picture was the storyteller's.</InstructionsP>
@@ -73,30 +91,34 @@ const Navbar = () => {
                 <Scoring>If nobody or everybody finds the correct card, the storyteller scores 0, and each of the other players scores 2. Otherwise the storyteller and whoever found the correct answer score 3. Players score 1 point for every vote for their own card.
                 The game ends when the deck is empty or if a player scores 30 points. In either case, the player with the most points wins the game.</Scoring>
           </Instructions>
-          <About flag={aboutFlag}>
+          <About flag={aboutFlag} onMouseLeave={()=>setAboutFlag(false)}>
             <Note>Go back to a time where you could play with friends, this time, on-line. enjoy :)</Note>
           </About>
-        <MenuModal flag={dropdownFlag} toggleInstructions={setInstructionsFlag} toggleAbout={setAboutFlag}/>
+        <MenuModal flag={dropdownFlag} toggleInstructions={setInstructionsFlag} toggleAbout={setAboutFlag} toggleDropdown={setDropdownFlag} startNewGame={startNewGame} joinNewGame={joinNewGame}/>
       </Title>
       <GameInfo>
-        {(gameData.status!=='waiting' && gameData.status !== "waiting-to-start") && (roundData.isMyTurn 
-          ? (<ActivePlayerIsMe>IT'S YOUR TURN - {roundData.status==="submitting-titled-card"
-            ? <p>choose the titled card</p> 
-            : (gameData.status==='end-of-round' 
-              ? <p>scores</p> 
-              : <p>waiting</p>
-              )
-              }
-            </ActivePlayerIsMe>)
-          : (<ActivePlayer>
-            <PlayerColor color={PLAYER_COLORS[gameData.activePlayer]}/>'s turn - 
-            {roundData.status==='waiting-for-title' && <p>waiting for titled card</p>}
-            {roundData.status === 'matching-card-to-title' && <p>find the best card for the title</p>}
-            {roundData.status === 'waiting-for-other-submissions' && <p>waiting for other players to choose their card</p>}
-            {roundData.status === 'voting' && <p>Choose the card that best matches the title</p>}
-            {roundData.status === 'waiting-for-other-votes' && (gameData.status==='end-of-round' ? <p>Scores!</p> : <p>Waiting for other votes</p>)}
-            </ActivePlayer>))}
-        {roundData.titledCard.title ? <div>card Title: {roundData.titledCard.title}</div>: null}
+        { gameData.status==="winner"
+          ? <EndOfGameMessage>winner</EndOfGameMessage>
+          : gameData.status === "loser"
+            ? <EndOfGameMessage>Loser</EndOfGameMessage>
+            : (gameData.status!=="waiting" && gameData.status !== "waiting-to-start") && (roundData.isMyTurn 
+                ? (<ActivePlayerIsMe>IT'S YOUR TURN - {roundData.status==="submitting-titled-card"
+                  ? <p>choose the titled card</p> 
+                  : (gameData.status==='end-of-round' 
+                    ? <p>scores</p> 
+                    : <p>waiting</p>
+                    )
+                    }
+                  </ActivePlayerIsMe>)
+                : (<ActivePlayer>
+                  <PlayerColor color={PLAYER_COLORS[gameData.activePlayer]}/>'s turn - 
+                  {roundData.status==='waiting-for-title' && <p>waiting for titled card</p>}
+                  {roundData.status === 'matching-card-to-title' && <p>find the best card for the title</p>}
+                  {roundData.status === 'waiting-for-other-submissions' && <p>waiting for other players to choose their card</p>}
+                  {roundData.status === 'voting' && <p>Choose the card that best matches the title</p>}
+                  {roundData.status === 'waiting-for-other-votes' && (gameData.status==='end-of-round' ? <p>Scores!</p> : <p>Waiting for other votes</p>)}
+                  </ActivePlayer>))}
+              {roundData.titledCard.title ? <CardTitle>card Title: {roundData.titledCard.title}</CardTitle>: null}
       </GameInfo>
       <UserInfoBox data-css='user-info'>
         {currentUser.info.email 
@@ -119,14 +141,18 @@ const Navbar = () => {
             >Sign In</SignInBtn>
           </>)}
       </UserInfoBox>
-
       {userProfileModal && <UserProfile toggle={setUserProfileModal}/>}
-      {/* <UserProfile toggle={setUserProfileModal}/> */}
+      {newGameWarning && <NewGameWarning toggle={setNewGameWarning}/>}
+      {joinGameWarning && <JoinNewGameWarning toggle={setJoinNewGameWarning} />}
     </Wrapper>
     );
 }
 
 export default Navbar;
+
+const EndOfGameMessage = styled.div`
+  text-align: center;
+`
 
 const Wrapper = styled.div`
   height: 60px;
@@ -152,16 +178,25 @@ const TitleName = styled.div`
   font-family: 'Limelight', cursive;
   /* z-index:300; */
   position:relative;
+  padding: 13px 0;
 `;
 
-const GameId = styled.div`
-  padding-top:5px;
-`;
+// const GameId = styled.div`
+//   padding-top:5px;
+// `;
 
 const GameInfo = styled.div`
   flex:1;
   padding-left: 20px;
+  display:flex;
+  justify-content:space-around;
 `;
+
+const CardTitle = styled.div`
+  background-color:rgba(220,220,220,0.7);
+  border-radius:3px;
+  padding: 2px;
+`
 
 const UserInfoBox = styled.div`
   width: fit-content;
@@ -244,7 +279,7 @@ const Instructions = styled.div`
   max-height: calc(100vh - 60px);
   position:absolute;
   left: 150px;
-  top: 46px;
+  top: 58px;
   padding: 10px;
   border-bottom-left-radius: 20px;
   border-bottom-right-radius: 20px;
@@ -281,7 +316,7 @@ const About = styled.div`
   max-height: calc(100vh - 60px);
   position:absolute;
   left: 150px;
-  top: 46px;
+  top: 58px;
   padding: 10px;
   border-bottom-left-radius: 20px;
   border-bottom-right-radius: 20px;
