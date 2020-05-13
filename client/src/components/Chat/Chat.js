@@ -44,6 +44,7 @@ const Chat = () => {
       const conversationRef = firebase.database().ref(`currentChats/${gameId}/conversation`)
       conversationRef.off()
     }
+    // eslint-disable-next-line
   },[])
 
   const sendMessage = () =>{
@@ -81,6 +82,7 @@ const Chat = () => {
     if(autoScroll)messagesRef.current.scrollTop = messagesRef.current.scrollHeight
     return () => {
     }
+    // eslint-disable-next-line
   },[conversation])
 
   return (
@@ -132,7 +134,7 @@ const Wrapper = styled.div`
   border: 2px ${props=>props.color} solid;
   border-radius: 5px;
   position: absolute;
-  z-index: 101;
+  z-index: 1;
   bottom:0;
   right:10px;
 `;
@@ -156,7 +158,6 @@ const MessagesContainer = styled.div`
 `;
 
 const Footer = styled.form`
-  /* display: flex; */
   padding: 2px;
   background-color: rgba(0,0,0,0.4);
   display: ${props=>props.minFlag ? 'none' : 'flex'};
@@ -164,8 +165,6 @@ const Footer = styled.form`
 `;
 
 const SendBtn = styled.button`
-  /* height: 10px;
-  width: 20px; */
   padding: 4px;
   align-items: center;
   justify-content: center;
@@ -174,6 +173,9 @@ const SendBtn = styled.button`
   background-color:transparent;
   margin:0;
   padding: 0;
+  &:hover{
+    cursor:pointer;
+  }
 `;
 
 const MessageInput = styled.input`

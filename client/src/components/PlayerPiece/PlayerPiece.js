@@ -2,20 +2,13 @@ import React, {
   useEffect,
   useState,
 } from 'react';
-import styled, {keyframes} from 'styled-components';
-import bunny from '../../assets/bunny.png';
-import {
-  randInRange
-} from '../../utils';
-import Bunny from '../../assets/Bunny.svg';
-
 
 const PlayerPiece = ({filter, score, playerTurn, fill}) => {
   const locationsOfScore = [{top: 11, left: 6},{top: 22, left: 15},{top: 31, left: 13},{top: 39, left: 3},{top: 46, left: 16},{top: 58, left: 6},{top: 65, left: 14},{top: 77, left: 5},{top: 84, left: 18},{top: 75, left: 32},{top: 83, left: 43},{top: 75, left: 51},{top: 71, left: 62},{top: 84, left: 72},{top: 81, left: 84},{top: 70, left: 79},{top: 60, left: 87},{top: 55, left: 73},{top: 46, left: 73},{top: 38, left: 82},{top: 24, left: 86},{top: 13, left: 76},{top: 1, left: 83},{top: 1, left: 71},{top: 11, left: 64},{top: 9, left: 53},{top: 1, left: 47},{top: 11, left: 40},{top: 11, left: 29},{top: 3, left: 32},{top: 1, left: 19},];
 
-  const [previousLocation, setPreviousLocation] = useState({
-    top: locationsOfScore[0].top + playerTurn,
-    left: locationsOfScore[0].left + playerTurn})
+  // const [previousLocation, setPreviousLocation] = useState({
+  //   top: locationsOfScore[0].top + playerTurn,
+  //   left: locationsOfScore[0].left + playerTurn})
   const [currentLocation, setCurrentLocation] = useState({
     top: locationsOfScore[0].top + playerTurn,
     left: locationsOfScore[0].left + playerTurn})
@@ -24,14 +17,16 @@ const PlayerPiece = ({filter, score, playerTurn, fill}) => {
     if(score!==currentScore){
       setCurrentScore(Math.min(score, 30))
     }
+    // eslint-disable-next-line
   },[score])
 
   useEffect(()=>{
-    setPreviousLocation(currentLocation)
+    // setPreviousLocation(currentLocation)
     setCurrentLocation({
       top: locationsOfScore[currentScore].top + playerTurn,
       left: locationsOfScore[currentScore].left + playerTurn,
     })
+    // eslint-disable-next-line
   },[currentScore])
 
   return ( 

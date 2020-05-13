@@ -56,5 +56,13 @@ export const stateDifferentThenDB = (state, db) => {
 
 export const validateGameIdType = (gameId) => {
   // console.log('gameId',(''+gameId).length)
-  if((''+gameId).length!==10)return false
+  console.log('gameId',typeof gameId)
+  if(typeof gameId !== 'number' || (''+gameId).length!==10){
+    console.log('fasle',(''+gameId).length)
+    return false
+  } else {
+    console.log('true');
+    
+    return true
+  }
 }

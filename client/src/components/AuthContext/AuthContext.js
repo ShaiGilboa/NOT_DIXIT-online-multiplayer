@@ -11,10 +11,8 @@ import {
 } from 'react-redux';
 
 import {
-  firebaseApp,
   firebaseAppAuth,
   providers,
-  firebaseDB,
 } from '../../firebase';
 
 
@@ -79,6 +77,7 @@ const AuthProvider = ({
           dispatch(userSignIn(json.data));
         })
     }
+    // eslint-disable-next-line
   }, [user]);
 
   return (

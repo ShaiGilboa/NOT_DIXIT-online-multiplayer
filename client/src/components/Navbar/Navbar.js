@@ -5,7 +5,6 @@ import React, {
 } from 'react';
 import {
   useHistory,
-  Link,
 } from 'react-router-dom';
 import styled from 'styled-components';
 
@@ -22,7 +21,7 @@ import JoinNewGameWarning from '../JoinNewGameWarning';
 
 import {
   PLAYER_COLORS,
-  CARD_IN_HAND_WIDTH,
+  // CARD_IN_HAND_WIDTH,
 } from '../../constants';
 
 const Navbar = () => {
@@ -55,10 +54,12 @@ const Navbar = () => {
   }
   useEffect(()=>{
     if(roundData.status!=='waiting' && gameData.turnNumber!==null)setNavbarColor(PLAYER_COLORS[gameData.turnNumber])
+    // eslint-disable-next-line
   },[roundData.status])
 
   useEffect(()=>{
     if(!currentUser.info.email)history.push('/')
+    // eslint-disable-next-line
   },[currentUser])
 
   const startNewGame = () => {
@@ -152,7 +153,7 @@ export default Navbar;
 
 const EndOfGameMessage = styled.div`
   text-align: center;
-`
+`;
 
 const Wrapper = styled.div`
   height: 60px;
@@ -171,6 +172,7 @@ const Title = styled.div`
   z-index:0;
   position:relative;
 `;
+
 const TitleName = styled.div`
   color: lightgrey;
   width: fit-content;
@@ -180,10 +182,6 @@ const TitleName = styled.div`
   position:relative;
   padding: 13px 0;
 `;
-
-// const GameId = styled.div`
-//   padding-top:5px;
-// `;
 
 const GameInfo = styled.div`
   flex:1;

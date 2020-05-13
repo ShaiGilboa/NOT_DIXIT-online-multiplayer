@@ -17,7 +17,6 @@ import {
   useDispatch,
 } from 'react-redux';
 
-import RNDable from '../RNDable';
 import UnstyledButton from '../../components/UnstyledButton';
 
 const ChosenCardModal = ({
@@ -144,39 +143,30 @@ const ChosenCardModal = ({
     <Wrapper
       onClick={()=>setChosenCardModalFlag(false)}
     > 
-      {/* <RNDable 
-        initialWidth={400}
-        initialHeight={400}
-        initialTop={1}
-        initialLeft={100}
-      > */}
       <ChosenCardModalContainer
         onSubmit={cardChosen}
         onClick={(event)=>event.stopPropagation()}
       >
         <Info>
-          {/* <div> */}
             {roundData.status==='submitting-titled-card'
               ? (<>
-              <label htmlFor="title">What title? </label>
+              <Label htmlFor="title">What title? </Label>
               <input type="text" id="title" name="title" placeholder="title" value={title}
                 onChange={valueChange}
                 ref={titleInputRef}
               />
               </>)
               : (
-                <label>does this card match {titledCard.title}?</label>
+                <Label>does this card match "{titledCard.title}"?</Label>
               )}
             {isMyTurn && roundData.status !== "submitting-titled-card"
             ? <p>your turn, you cannot vote</p>
             : ((chosenCard && roundData.mySubmission && (chosenCard.id === roundData.mySubmission))
               ? <p>this is your card</p>
               : <GameBtns type="submit">submit</GameBtns>)}
-          {/* </div> */}
         </Info>
         <CardImg src={chosenCard.img} />
       </ChosenCardModalContainer>
-      {/* </RNDable> */}
     </Wrapper>
     );
 }
@@ -187,9 +177,8 @@ const Wrapper = styled.div`
   height: calc(100vh - 60px);
   position: relative;
   width: 100%;
-  z-index: 100;
+  z-index: 3;
   background-color: rgba(60,60,60,0.5);
-  /* opacity: 0.5; */
 `;
 
 const ChosenCardModalContainer = styled.form`
@@ -198,17 +187,14 @@ const ChosenCardModalContainer = styled.form`
   height: fit-content;
   margin: auto;
   border-radius: 10px;
-  z-index: 101;
+  z-index: 2;
   display: flex;
   flex-direction:column;
   background-color: white;
   object-fit:cover;
-  /* opacity: 1; */
 `;
 
 const CardImg = styled.img`
-  /* flex:1; */
-  /* width: 100%; */
   max-height: calc(100vh - 80px);
   object-fit: contain;
   height:fit-content;
@@ -216,13 +202,13 @@ const CardImg = styled.img`
 `;
 
 const Info = styled.div`
-  /* flex:1; */
   display: flex;
   flex-direction: row;
   justify-content: space-around;
   height: fit-content;
   object-fit: cover;
   text-align:center;
+  align-items: center;
 `;
 
 const GameBtns = styled(UnstyledButton)`
@@ -231,4 +217,9 @@ const GameBtns = styled(UnstyledButton)`
   box-shadow: 0px 0 2px #add5e1 inset, 0 0 2px #add5e1;
   padding: 5px;
   font-size: 20px;
+`;
+
+const Label = styled.label`
+  max-width: 100%;
+  padding: 0 3px;
 `;

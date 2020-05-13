@@ -1,5 +1,4 @@
 import React, {
-  useEffect,
   useState,
 } from 'react';
 import {
@@ -122,7 +121,6 @@ const Wrapper = styled.div`
   z-index: 100;
   background-color: rgba(60,60,60,0.5);
   padding: 10px;
-  /* opacity: 0.5; */
 `;
 
 const Container = styled.form`
@@ -139,8 +137,6 @@ const Container = styled.form`
   flex-direction: column;
   justify-content: space-around;
   text-align: center;
-  /* object-fit:cover; */
-  /* opacity: 1; */
 `;
 
 const GameBtns = styled(UnstyledButton)`

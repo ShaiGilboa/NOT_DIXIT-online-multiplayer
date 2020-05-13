@@ -15,26 +15,19 @@ import {
 } from 'react-router-dom';
 
 import {
-  randFromArr,
   reshuffleArr,
   stateDifferentThenDB,
 } from '../../utils';
 
 import {
   PLAYER_COLORS,
-  CARD_IN_HAND_WIDTH,
-  CARD_IN_HAND_HEIGHT,
 } from '../../constants';
 
 import {
   setIsMyTurn,
   setTitledCard,
   changeRoundStatus,
-  addSubmissionToSubmissionsArr,
   reShuffleSubmissions,
-  setPlayersAmount,
-  setAmountOfVotes,
-  setMySubmission,
   setGameStatus,
   addCardToHand,
   updateVotesInSubmission,
@@ -47,11 +40,7 @@ import {
 
 import CardInHand from '../../components/CardInHand';
 import ChosenCardModal from '../../components/ChosenCardModal';
-// import CardToVoteOn from '../../components/CardToVoteOn';
-import ScoreBoard from '../../components/ScoreBoard';
-// import PlayerToken from '../../components/PlayerToken';
 import Chat from '../../components/Chat';
-import UnstyledButton from '../../components/UnstyledButton';
 import Winner from '../../components/Winner';
 import Loser from '../../components/Loser';
 import VotingWrapper from '../../components/VotingWrapper';
@@ -64,24 +53,18 @@ const Game = () => {
   const {gameId, players} = gameData;
   const roundData = useSelector(state=>state.roundData)
   const {submissionsArr} = roundData
-  const {hand, titledCard, isMyTurn} = roundData
+  const {hand, isMyTurn} = roundData
   const userId = useSelector(state=>state.currentUser.info.id)
-  const email = useSelector(state=>state.currentUser.info.email)
   const [playerColor, setPlayerColor] = useState('')
-  // const [players, setPlayers] = useState([]);
-  const [chosenTitle, setChosenTitle] = useState(false)
   const [chosenCardModalFlag, setChosenCardModalFlag] = useState(false)
   const [chosenCard, setChosenCard] = useState({
     id: null,
     img: null,
   })
 
-  const [submissionsMadeInDB, setSubmissionsMadeInDB] = useState(0);
-  // const [votingMessage, setVotingMessage] = useState([])
-  const [matchCardModalFlag, setMatchCardModalFlag] = useState(false)
-
   useEffect(()=>{
     dispatch(clearChat())
+    // eslint-disable-next-line
   },[])
 
   // set playerColor based on turn number
@@ -91,6 +74,7 @@ const Game = () => {
 
   useEffect(()=>{
     if(!gameData.gameId)history.push('/')
+    // eslint-disable-next-line
   },[gameData.gameId])
 
   // updates the amount of players logged in to the game
@@ -100,10 +84,9 @@ const Game = () => {
   // only the activePlayer is changing the activePlayer to the next one
   useEffect(()=>{
       if(gameData.status === 'end-of-round')dispatch(clearTitledCard())
-      
-      // listens to the players that are logged on
-      const playersRef = firebase.database().ref(`currentGames/${gameId}/players`)
-      playersRef.on('value', playersSnapshot => {
+        // listens to the players that are logged on
+        const playersRef = firebase.database().ref(`currentGames/${gameId}/players`)
+        playersRef.on('value', playersSnapshot => {
         if(playersSnapshot.val())if(stateDifferentThenDB(players, playersSnapshot.val())){
           dispatch(setPlayers(playersSnapshot.val()))
           }
@@ -159,6 +142,7 @@ const Game = () => {
         const gameStatus = firebase.database().ref(`currentGames/${gameId}/status`)
       gameStatus.off();
       }
+      // eslint-disable-next-line
   },[gameData.status])
 
   // checks when it is 'myTurn'
@@ -179,6 +163,7 @@ const Game = () => {
       const currentRoundRef = firebase.database().ref(`currentGames/`+gameId);
       currentRoundRef.off();
     };
+    // eslint-disable-next-line
   },[isMyTurn])
 
   // get the title from the DB
@@ -258,6 +243,7 @@ const Game = () => {
       const roundStatusRef = firebase.database().ref(`currentGames/${gameId}/round/status`)
       roundStatusRef.off()
     };
+    // eslint-disable-next-line
   },[roundData.status])
   
   useEffect(()=>{
@@ -273,10 +259,10 @@ const Game = () => {
         })
         .catch(err=>console.log('err in game-over:winner',err))
     }
+    // eslint-disable-next-line
   },[gameData.score])
 
   const scoring = (cardsInPlay, totalVotes, gameId) => {
-    // console.log('fetch - scoring')
     const adjustedCards = JSON.parse(JSON.stringify(cardsInPlay))
     Object.keys(adjustedCards).map(cardId=>adjustedCards[cardId].imgSrc = ""+ cardId)
     const body = {
@@ -351,12 +337,10 @@ const Game = () => {
           <VotingWrapper submissionsArr={roundData.submissionsArr} gameStatus={gameData.status} roundStatus={roundData.status} nextPrepRound={nextPrepRound} clickOnCardToVote={()=>console.log('nothing')}/>
       <Chat/>
         </Winner>
-
       : (gameData.status === "loser" 
           ? <Loser>
               <VotingWrapper submissionsArr={roundData.submissionsArr} gameStatus={gameData.status} roundStatus={roundData.status} nextPrepRound={nextPrepRound} clickOnCardToVote={()=>console.log('nothing')}/>
       <Chat/>
-
             </Loser>
           : (<Wrapper data-css='cards in hand'>
       {chosenCardModalFlag && <ChosenCardModal
@@ -365,41 +349,21 @@ const Game = () => {
       />}
       {(roundData.status === 'voting' || roundData.status === 'waiting-for-other-votes' || roundData.status==='scores') && (
         <VotingWrapper submissionsArr={roundData.submissionsArr} gameStatus={gameData.status} roundStatus={roundData.status} nextPrepRound={nextPrepRound} clickOnCardToVote={clickOnCardToVote}/>
-        // <VotingWrapper>
-        //   {roundData.submissionsArr.map(card=>(
-        //   <Section key={card.id}>
-        //     <CardToVoteOn
-        //     key={card.id}
-        //     id={card.id}
-        //     img={card.imgSrc}
-        //     onClick={clickOnCardToVote}
-        //     showBorderFlag={gameData.status==='end-of-round'}
-        //     color={PLAYER_COLORS[card.submittedBy]}
-        //     />
-        //     <TokensWrapper data-css="tokensWrapper">
-        //       {gameData.status==='end-of-round' && card.votesByPlayerTurn.map(voter => <PlayerToken key={voter} data-css='token' color={PLAYER_COLORS[voter]} />)}
-        //     </TokensWrapper>
-        //   </Section>
-        //   )
-        //   )}
-        //   {(gameData.status==='end-of-round' && roundData.status!=='starting-new-round') && <ContinueBtn
-        //       onClick={()=>nextPrepRound()}
-        //     >continue?</ContinueBtn>}
-        // </VotingWrapper>
         )}
       {(gameData.status !== 'winner' || gameData.status !== 'loser') && <CardsInHand
-        color={playerColor}
-        >
-        {hand.length && hand.map((card, index)=><CardInHand
-          key={card.id}
-          id={card.id}
-          img={card.imgSrc}
-          index={index}
-          setChosenCardModalFlag={setChosenCardModalFlag}
-          setChosenCard={setChosenCard}
-          onClick={clickOnCardInHand}
-        />)}
-      </CardsInHand>}
+          color={playerColor}
+          >
+            {hand.length && hand.map((card, index)=><CardInHand
+              key={card.id}
+              id={card.id}
+              img={card.imgSrc}
+              index={index}
+              setChosenCardModalFlag={setChosenCardModalFlag}
+              setChosenCard={setChosenCard}
+              onClick={clickOnCardInHand}
+            />)}
+        </CardsInHand>
+      }
       <Chat/>
     </Wrapper>))}
     </>);
@@ -416,6 +380,7 @@ const CardsInHand = styled.div`
   position: absolute;
   bottom: -80px;
   width: 100%;
+  z-index:1;
   border: 3px solid ${props=>props.color}
   height: fit-content;
   margin: 0 auto;
@@ -423,60 +388,5 @@ const CardsInHand = styled.div`
   justify-content: center;
   justify-self:center;
   background-color: ${props=>props.color};
-  /* &::before{ */
-    box-shadow:  5px 0 5px 2px #8fb11c , inset 0 0 5px 2px #8fb11c;
-
+  box-shadow:  5px 0 5px 2px #8fb11c , inset 0 0 5px 2px #8fb11c;
 `;
-
-{/* const TokensWrapper = styled.div`
-  height: 120px;
-  width: ${CARD_IN_HAND_WIDTH};
-  display: flex;
-  flex-direction: row;
-  justify-content:center;
-  position:absolute;
-`; */}
-
-{/* const VotingWrapper = styled.div`
-  position: relative;
-  display: flex;
-  flex-direction: row;
-  top:2vh;
-  margin: auto;
-  width: 80%;
-  justify-content: space-around;
-  height: ${2.5* CARD_IN_HAND_HEIGHT}px;
-`;
-
-const Section = styled.div`
-  display: flex;
-  flex-direction:column;
-  position:relative;
-`; */}
-
-const GameId = styled.h2`
-  position: absolute;
-  right:15px;
-  bottom:85px;
-  margin: 0;
-  padding: 2px 10px;
-  height: fit-content;
-  background-color: rgba(0, 0, 0, 0.3);
-  border-radius: 5px;
-  border: solid 1px grey;
-  color: Azure;
-  /* width */
-`;
-
-const GameBtns = styled(UnstyledButton)`
-  background:#add5e1;
-  border-radius: 20px;
-  box-shadow: 0px 0 2px #add5e1 inset, 0 0 2px #add5e1;
-  padding: 5px;
-  font-size: 20px;
-`;
-
-// const ContinueBtn = styled(GameBtns)`
-//   position: absolute;
-//   bottom: 0;
-// `;

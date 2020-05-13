@@ -1,23 +1,12 @@
-import React, {
-  useState,
-  useEffect,
-} from 'react';
-import ReactDOM from 'react-dom';
+import React from 'react';
+// import ReactDOM from 'react-dom';
 import {
   BrowserRouter as Router,
   Switch,
-  Route,useHistory
+  Route,
 } from 'react-router-dom';
-import {
-  useSelector,
-} from 'react-redux';
-// import {
-//   useHistory,
-// } from 'react-router';
-import styled from 'styled-components';
-import GlobalStyles from '../GlobalStyles';
-// import { AuthContext } from '../AuthContext';
 
+import GlobalStyles from '../GlobalStyles';
 import Navbar from '../Navbar';
 import Homepage from '../../pages/Homepage';
 import Game from '../../pages/Game';
@@ -26,10 +15,8 @@ import Board from '../Board';
 const App = () => {
   return (
     <Router>
-      {/*global components*/}
       <GlobalStyles />
       <Navbar />
-      {/*different pages*/}
       <Board />
       <Switch>
         <Route path='/' exact>
@@ -41,9 +28,6 @@ const App = () => {
         <Route path='/waiting' >
           <WaitingForOtherUsers />
         </Route>
-        {/* <Route path='/user-profile' >
-          <UserProfile />
-        </Route> */}
       </Switch>
     </Router>
     );

@@ -1,6 +1,4 @@
 import React, {
-  useContext,
-  useEffect,
   useState,
 } from 'react';
 import {
@@ -33,13 +31,11 @@ const Homepage = () => {
   const currentUser = useSelector(state=>state.currentUser)
 
   const [gameId, setGameId] = useState('')
-  const [test, setTtest] = useState('')
+  const [errorMessage, setErrorMessage] = useState('');
   const waitingToStart = (gameId, hand) =>{
     dispatch(newGameId(gameId));// and game status = 'waiting-to-start'
     dispatch(setNewHand(hand));// and round status = 'playing'
-    // dispatch(changeCurrentUserStatus('playing'))
     history.push('/waiting') // waiting room
-    // history.push('/game')
   }
 
   const startNewGame = () => {
@@ -72,34 +68,40 @@ const Homepage = () => {
   const joinExistingGame = (event) => {
     event.preventDefault();
     const parsedGameId = parseInt(gameId);
-    if(!validateGameIdType(parsedGameId))
-    dispatch(changeCurrentUserStatus('joining-game'))
-    //TODO: convert Id to XXX-XXXX-XXX
-    const body = {
-      email: currentUser.info.email,
-      displayName: currentUser.info.displayName,
-      gameId: parsedGameId,
-      photoURL: currentUser.info.photoURL,
-      id: currentUser.info.id,
+      console.log('parsedGameId',parsedGameId)
+    if(validateGameIdType(parsedGameId)){
+      dispatch(changeCurrentUserStatus('joining-game'))
+      //TODO: convert Id to XXX-XXXX-XXX
+      const body = {
+        email: currentUser.info.email,
+        displayName: currentUser.info.displayName,
+        gameId: parsedGameId,
+        photoURL: currentUser.info.photoURL,
+        id: currentUser.info.id,
+      }
+      fetch('/join-existing-game', {
+        method: 'POST',
+        headers: {
+              "Content-Type": "application/json",
+              "Accept" : "application/json"
+          },
+        body: JSON.stringify(body)
+      })
+      .then(res=>res.json())
+      .then(res=>{
+        if(res.status===200) {
+          dispatch(clearChat())
+          dispatch(setPlayerTurn(res.turnNumber))
+          waitingToStart(res.gameId, res.hand);
+        } else {
+            console.log('res.message',res.message);
+            dispatch(changeCurrentUserStatus('logged-in'))
+            setErrorMessage(res.message);
+          }
+      })
+    } else {
+      setErrorMessage('there is a problem with the game id, please try again')
     }
-    fetch('/join-existing-game', {
-      method: 'POST',
-      headers: {
-            "Content-Type": "application/json",
-            "Accept" : "application/json"
-        },
-      body: JSON.stringify(body)
-    })
-    .then(res=>res.json())
-    .then(res=>{
-      if(res.status===200) {
-        dispatch(clearChat())
-        dispatch(setPlayerTurn(res.turnNumber))
-        waitingToStart(res.gameId, res.hand);
-      } else {
-          console.log('res.message',res.message)
-        }
-    })
   }
 
   return (
@@ -123,6 +125,7 @@ const Homepage = () => {
                   <Input type='text' id='gameId' name='gameId' value={gameId} placeholder='game id#'
                     onChange={(event)=>setGameId(event.target.value)}
                   />
+                  {errorMessage.length > 0 && <ErrorMessage>{errorMessage}</ErrorMessage>}
                 </form>
               </StartGame>
             )
@@ -201,7 +204,7 @@ const Note = styled.div`
 const Scoring = styled.p`
   padding-top: 10px;
   font-size: 20px;
-font-family: 'Muli', sans-serif;
+  font-family: 'Muli', sans-serif;
   line-height: 1.2;
 `;
 
@@ -227,6 +230,15 @@ const StartGame = styled.div`
 const Input = styled.input`
   border-radius: 2px;
 `;
+
+const ErrorMessage = styled.p`
+  color: red;
+  width: 100%;
+  border-radius: 3px;
+  background-color: rgba(220,220,220,0.7);
+  width: 158px;
+`;
+
 const Label = styled.label`
   background-color: rgba(200,200,200,0.5);
   font-size: 20px;
@@ -234,4 +246,6 @@ const Label = styled.label`
   line-height: 1.3;
   margin-top:3px;
   display:block;
+  width: 158px;
+  margin: 0 auto;
 `;

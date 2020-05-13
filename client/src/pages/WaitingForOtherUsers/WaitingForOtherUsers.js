@@ -20,8 +20,6 @@ import {
 } from '../../constants';
 import Chat from '../../components/Chat';
 import UnstyledButton from '../../components/UnstyledButton';
-// TODO: 'start game' firebase listener if you are 'joining-game' (userStatus)
-// TODO: 'start game' function if you are 'creating-game'
 
 const WaitingForOtherUsers = () => {
   const history = useHistory();
@@ -29,20 +27,19 @@ const WaitingForOtherUsers = () => {
   const [playersLoggedOn, setPlayersLoggedOn] = useState([])
   const gameData= useSelector(state=>state.gameData)
   const gameId = gameData.gameId 
-  const roundData = useSelector(state=>state.roundData)
+  // const roundData = useSelector(state=>state.roundData)
   const currentUser = useSelector(state=>state.currentUser)
   const userInfo = currentUser.info;
 
   useEffect(()=>{
     dispatch(clearChat())
+    // eslint-disable-next-line
   },[])
 
   useEffect(()=>{
     const playersLoggedOnRef = firebase.database().ref(`/currentGames/${gameId}/players`)
     playersLoggedOnRef.on('child_added', playerSnapshot => {
-      // console.log('playerSnapshot.val()',playerSnapshot.val())
       if(!playersLoggedOn.some(player=>player.email===playerSnapshot.val().email)){
-        // console.log('playersLoggedOn',playersLoggedOn.concat(playerSnapshot.val()))
         setPlayersLoggedOn(playersLoggedOn.concat(playerSnapshot.val()))
         }
     })
@@ -51,6 +48,7 @@ const WaitingForOtherUsers = () => {
       const playersLoggedOnRef = firebase.database().ref(`/currentGames/${gameId}/players`)
       playersLoggedOnRef.off()
     }
+    // eslint-disable-next-line
   },[playersLoggedOn])
   
   const moveToGame = () => {
@@ -68,6 +66,7 @@ const WaitingForOtherUsers = () => {
       const gameStatusRef = firebase.database().ref(`currentGames/${gameId}/status`)
       gameStatusRef.off()
     }
+    // eslint-disable-next-line
   },[gameData.status])
 
   const startGame = () => {
@@ -109,7 +108,7 @@ const Wrapper = styled.div`
   height: calc(100vh - 60px);
   position: relative;
   width: 100%;
-  z-index: 100;
+  z-index: 1;
   background-color: rgba(60,60,60,0.5);
   display: flex;
   justify-content: center;

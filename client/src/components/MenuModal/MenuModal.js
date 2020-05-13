@@ -1,20 +1,15 @@
-import React, {
-  useEffect,
-  useState,
-} from 'react';
-import styled, {keyframes} from 'styled-components';
+import React from 'react';
+import styled from 'styled-components';
 
 const MenuModal = ({flag, toggleInstructions, toggleAbout, toggleDropdown, startNewGame, joinNewGame}) => {
-  const [aboutFlag, setAboutFlag] = useState(false);
+  // const [aboutFlag, setAboutFlag] = useState(false);
 
   const clearFlags = () => {
     toggleInstructions(false)
     toggleAbout(false)
   }
   return (
-    <Wrapper flag={flag}
-      // onMouseLeave={()=>clearFlags()}
-    >
+    <Wrapper flag={flag}>
       <ul>
         <Li
           onClick={()=>toggleInstructions(true)}
