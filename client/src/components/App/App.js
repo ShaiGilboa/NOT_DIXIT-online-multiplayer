@@ -22,7 +22,6 @@ import Navbar from '../Navbar';
 import Homepage from '../../pages/Homepage';
 import Game from '../../pages/Game';
 import WaitingForOtherUsers from '../../pages/WaitingForOtherUsers';
-
 import Board from '../Board';
 const App = () => {
   return (
