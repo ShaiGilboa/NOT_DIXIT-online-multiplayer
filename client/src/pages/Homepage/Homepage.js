@@ -237,6 +237,7 @@ const ErrorMessage = styled.p`
   border-radius: 3px;
   background-color: rgba(220,220,220,0.7);
   width: 158px;
+  padding: 3px;
 `;
 
 const Label = styled.label`
