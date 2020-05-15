@@ -15,15 +15,16 @@ import {
   providers,
 } from '../../firebase';
 
-
 import {
   userSignIn,
   userSignOut,
   gameSignOut,
 } from '../../Redux/actions';
+import {
+  IP,
+} from '../../constants';
 
 export const AuthContext = createContext(null);
-
 
 const AuthProvider = ({
   children,
@@ -42,7 +43,7 @@ const AuthProvider = ({
     const body = {
       email: currentUser.info.email,
     }
-    fetch('/sign-out', {
+    fetch(`${IP}/sign-out`, {
       method: 'PUT',
       headers: {
           'Content-Type': 'application/json',
@@ -60,7 +61,7 @@ const AuthProvider = ({
 
   useEffect(() => {
     if (user){
-      fetch(`/sign-in`, {
+      fetch(`${IP}/sign-in`, {
         method: "POST",
         headers: {
           'Content-Type': 'application/json',

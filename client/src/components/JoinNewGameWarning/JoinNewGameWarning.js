@@ -18,7 +18,9 @@ import {
 import {
   validateGameIdType,
 } from '../../utils';
-
+import {
+  IP,
+} from '../../constants';
 
 import styled from 'styled-components';
 import UnstyledButton from '../UnstyledButton';
@@ -41,7 +43,7 @@ const JoinNewGameWarning = ({toggle}) => {
         body: `join a new game with the Id: \n${gameId}`,
         photoURL: currentUser.info.photoURL,
       }
-      fetch('/send-message', {
+      fetch(`${IP}/send-message`, {
         method: 'PUT',
         headers: {
           "Content-Type": "application/json",
@@ -68,7 +70,7 @@ const joinNewGameForReal = (event) => {
         photoURL: currentUser.info.photoURL,
         id: currentUser.info.id,
       }
-      fetch('/join-existing-game', {
+      fetch(`${IP}/join-existing-game`, {
         method: 'POST',
         headers: {
               "Content-Type": "application/json",

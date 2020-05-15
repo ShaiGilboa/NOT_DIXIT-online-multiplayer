@@ -17,6 +17,7 @@ import {
 } from '../../Redux/actions';
 import {
   PLAYER_COLORS,
+  IP,
 } from '../../constants';
 import Chat from '../../components/Chat';
 import UnstyledButton from '../../components/UnstyledButton';
@@ -70,7 +71,7 @@ const WaitingForOtherUsers = () => {
   },[gameData.status])
 
   const startGame = () => {
-    fetch('/start-game', {
+    fetch(`${IP}/start-game`, {
       method: 'PATCH',
       headers: {
           "Content-Type": "application/json",

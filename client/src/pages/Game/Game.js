@@ -21,6 +21,7 @@ import {
 
 import {
   PLAYER_COLORS,
+  IP,
 } from '../../constants';
 
 import {
@@ -102,7 +103,7 @@ const Game = () => {
           const body = {
             gameId
           }
-          fetch('/start-next-round', {
+          fetch(`${IP}/start-next-round`, {
             method: "PUT",
             headers: {
             "Content-Type": "application/json",
@@ -123,7 +124,7 @@ const Game = () => {
             console.log('gameData.score post',gameData.score)
             console.log('here post', gameData.status)
             dispatch(setGameStatus('loser'))
-            fetch('/game-over/loser', {
+            fetch(`${IP}/game-over/loser`, {
               method: "PATCH",
               headers: {
               "Content-Type": "application/json",
@@ -183,7 +184,7 @@ const Game = () => {
       if(amountOfCardsInPlay === players.length){
         if(amountOfCardsInPlay>0 && roundData.status==='waiting-for-other-submissions') {
           // fetch the submissions throught he db
-          fetch(`/get-submission-array/${gameId}`)
+          fetch(`${IP}/get-submission-array/${gameId}`)
           .then(res=>res.json())
           .then(res=>{
             if(res.status === 200){
@@ -249,7 +250,7 @@ const Game = () => {
   useEffect(()=>{
     if(gameData.score>=30){
       dispatch(setGameStatus('winner'))
-      fetch('/game-over/winner', {
+      fetch(`${IP}/game-over/winner`, {
           method: "PATCH",
           headers: {
           "Content-Type": "application/json",
@@ -271,7 +272,7 @@ const Game = () => {
       gameId,
       activePlyerByTurn: gameData.turnNumber,
     };
-    fetch(`/calculate-and-give-points`, {
+    fetch(`${IP}/calculate-and-give-points`, {
       method: "PUT",
       headers: {
           "Content-Type": "application/json",
@@ -291,7 +292,7 @@ const Game = () => {
       playerTurn: gameData.turnNumber,
     }
     // changes player status to 'ready', and returns a new card
-    fetch('/prep-for-next-round', {
+    fetch(`${IP}/prep-for-next-round`, {
       method: "POST",
       headers: {
           "Content-Type": "application/json",

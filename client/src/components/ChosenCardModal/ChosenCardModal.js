@@ -17,6 +17,10 @@ import {
   useDispatch,
 } from 'react-redux';
 
+import {
+  IP,
+} from '../../constants';
+
 import UnstyledButton from '../../components/UnstyledButton';
 
 const ChosenCardModal = ({
@@ -51,7 +55,7 @@ const ChosenCardModal = ({
         gameId,
         turnNumber,
       }
-      fetch('/place-card', {
+      fetch(`${IP}/place-card`, {
         method: "POST",
         body: JSON.stringify(body),
         headers: {
@@ -80,7 +84,7 @@ const ChosenCardModal = ({
         gameId,
         turnNumber,
       }
-    fetch('/match-card-to-title', {
+    fetch(`${IP}/match-card-to-title`, {
       method: "POST",
       headers: {
           "Content-Type": "application/json",
@@ -108,7 +112,7 @@ const ChosenCardModal = ({
         cardId: chosenCard.id,
         playerVoting: turnNumber,
       }
-      fetch(`/vote/${gameId}`, {
+      fetch(`${IP}/vote/${gameId}`, {
           method: "PUT",
           headers: {
               "Content-Type": "application/json",

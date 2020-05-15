@@ -20,6 +20,7 @@ import ChatMessage from './ChatMessage';
 import {
   PLAYER_COLORS_FILTERS,
   PLAYER_COLORS,
+  IP
 } from '../../constants';
 
 const Chat = () => {
@@ -57,7 +58,7 @@ const Chat = () => {
         body: message,
         photoURL,
       }
-      fetch('/send-message', {
+      fetch(`${IP}/send-message`, {
         method: 'PUT',
         headers: {
           "Content-Type": "application/json",

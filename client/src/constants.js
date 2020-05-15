@@ -20,3 +20,5 @@ export const PLAYER_COLORS_FILTERS = {
   6: 'invert(55%) sepia(10%) saturate(711%) hue-rotate(169deg) brightness(94%) contrast(86%)',
   7: 'invert(28%) sepia(7%) saturate(6695%) hue-rotate(213deg) brightness(88%) contrast(93%)',
 }
+
+export const IP = 'https://backend-not-dixit.herokuapp.com'

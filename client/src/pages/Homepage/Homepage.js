@@ -23,7 +23,10 @@ import {
   newGameId,
   setPlayerTurn,
   clearChat,
-} from '../../Redux/actions'
+} from '../../Redux/actions';
+import {
+  IP,
+} from '../../constants';
 
 const Homepage = () => {
   const history = useHistory();
@@ -46,7 +49,7 @@ const Homepage = () => {
       photoURL: currentUser.info.photoURL,
       id: currentUser.info.id,
     }
-    fetch('/create-new-game', {
+    fetch(`${IP}/create-new-game`, {
       method: 'POST',
       headers: {
             "Content-Type": "application/json",
@@ -79,7 +82,7 @@ const Homepage = () => {
         photoURL: currentUser.info.photoURL,
         id: currentUser.info.id,
       }
-      fetch('/join-existing-game', {
+      fetch(`${IP}/join-existing-game`, {
         method: 'POST',
         headers: {
               "Content-Type": "application/json",
