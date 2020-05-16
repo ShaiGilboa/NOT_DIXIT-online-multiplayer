@@ -61,6 +61,7 @@ const WaitingForOtherUsers = () => {
   useEffect(()=>{
     const gameStatusRef = firebase.database().ref(`currentGames/${gameId}/status`)
     gameStatusRef.on('value', gameStatusSnapshot => {
+      console.log('gameStatusSnapshot.val()',gameStatusSnapshot.val())
       if(gameStatusSnapshot.val()==='playing')moveToGame()
     })
     return () => {
