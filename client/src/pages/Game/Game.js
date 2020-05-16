@@ -176,7 +176,7 @@ const Game = () => {
     RoundRef.child('cardsInPlay').orderByChild('status').equalTo('titledCard').on('child_added', (snapshot) => {
       if(snapshot.val() && !isMyTurn && roundData.status === 'waiting-for-title')dispatch(setTitledCard(snapshot.val().title))
     })
-// check that the all submissions are in
+  // check that the all submissions are in
     const cardsInPlayRef = firebase.database().ref(`currentGames/${gameId}/round/cardsInPlay`)
     cardsInPlayRef.on('value', cardsInPlaySnapshot => {
       const amountOfCardsInPlay = cardsInPlaySnapshot.numChildren()

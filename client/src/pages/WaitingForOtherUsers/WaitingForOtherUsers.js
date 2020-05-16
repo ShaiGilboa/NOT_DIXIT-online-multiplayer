@@ -72,6 +72,7 @@ const WaitingForOtherUsers = () => {
   },[gameData.status])
 
   const startGame = () => {
+    console.log('?!?!?')
     fetch(`${IP}/start-game`, {
       method: 'PATCH',
       headers: {
@@ -80,7 +81,10 @@ const WaitingForOtherUsers = () => {
         },
       body: JSON.stringify({gameId}),
     })
-    .then(moveToGame())
+    .then(check=>{
+      console.log('check',check)
+      moveToGame()
+    })
     .catch(err=>console.log('err in starting game',err))
   }
 
