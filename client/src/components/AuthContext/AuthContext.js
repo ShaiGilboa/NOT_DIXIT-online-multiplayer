@@ -34,6 +34,7 @@ const AuthProvider = ({
 }) => {
 
   const [appUser, setAppUser] = useState({})
+  const [signInWait, setSignInWait]= useState(false);
 
   const dispatch = useDispatch();
   const currentUser = useSelector(state=>state.currentUser);
@@ -74,6 +75,7 @@ const AuthProvider = ({
       })
         .then(res => res.json())
         .then(json => {
+          setSignInWait(false)
           setAppUser(json.data);
           dispatch(userSignIn(json.data));
         })
@@ -81,10 +83,16 @@ const AuthProvider = ({
     // eslint-disable-next-line
   }, [user]);
 
+  const handleSignIn = () => {
+    setSignInWait(true)
+    signInWithGoogle();
+  }
+
   return (
     <AuthContext.Provider value={{
-      signInWithGoogle,
+      handleSignIn,
       handleSignOut,
+      signInWait,
       }}>
       {children}
     </AuthContext.Provider>

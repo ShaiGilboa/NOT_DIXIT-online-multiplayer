@@ -1,4 +1,5 @@
 import React, {
+  useEffect,
   useState,
 } from 'react';
 import {
@@ -40,6 +41,10 @@ const Homepage = () => {
     dispatch(setNewHand(hand));// and round status = 'playing'
     history.push('/waiting') // waiting room
   }
+
+  useEffect(()=>{
+    if(currentUser.status==='joining-game' || currentUser.status==='creating-game')history.push('/waiting')
+  },[])
 
   const startNewGame = () => {
     dispatch(changeCurrentUserStatus('creating-game'))

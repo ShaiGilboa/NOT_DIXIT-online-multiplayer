@@ -78,7 +78,6 @@ const db = admin.database();
 // post: req.body{}
 // returns: 
 const signInHandler = async (req, res) => {
-  console.log('sgisngsingi')
   try {
     const returningUser = (await getUser(req.body.email));
     const data = {

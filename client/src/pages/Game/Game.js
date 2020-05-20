@@ -329,6 +329,8 @@ const Game = () => {
         id,
         img,
       });
+    } else if(gameData.status==='end-of-round' && roundData.status!=='starting-new-round'){
+      nextPrepRound()
     }
   }
 
