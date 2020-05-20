@@ -28,7 +28,12 @@ const getHandFromDeck = (deck) => {
 }
 
 const getNewGameIdBasedOnDate = () => {
-  const new10DigitId = Date.now() % 10000000000;
+  let new10DigitId = Date.now() % 10000000000;
+  if(new10DigitId.length!==10){
+    const idString = new10DigitId.toString();
+    const gap = new Array(10 - idString.length).fill(1).join('')
+    new10DigitId = Number(gap + idString)
+  }
   const Id = new10DigitId// convert to XXX-XXXX-XXX
   return Id
 }

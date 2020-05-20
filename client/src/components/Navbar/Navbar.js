@@ -5,7 +5,6 @@ import React, {
 } from 'react';
 import {
   useHistory,
-  Link,
 } from 'react-router-dom';
 import styled from 'styled-components';
 
@@ -19,17 +18,20 @@ import UserProfile from '../../pages/UserProfile';
 import MenuModal from '../MenuModal';
 import NewGameWarning from '../NewGameWarning';
 import JoinNewGameWarning from '../JoinNewGameWarning';
+import LoadingSpinner from '../LoadingSpinner';
+
 
 import {
   PLAYER_COLORS,
-  CARD_IN_HAND_WIDTH,
+  // CARD_IN_HAND_WIDTH,
 } from '../../constants';
 
 const Navbar = () => {
 
   const {
-    signInWithGoogle,
+    handleSignIn,
     handleSignOut,
+    signInWait,
   } = useContext(AuthContext);
 
   const gameData = useSelector(state=>state.gameData)
@@ -55,10 +57,12 @@ const Navbar = () => {
   }
   useEffect(()=>{
     if(roundData.status!=='waiting' && gameData.turnNumber!==null)setNavbarColor(PLAYER_COLORS[gameData.turnNumber])
+    // eslint-disable-next-line
   },[roundData.status])
 
   useEffect(()=>{
     if(!currentUser.info.email)history.push('/')
+    // eslint-disable-next-line
   },[currentUser])
 
   const startNewGame = () => {
@@ -82,7 +86,6 @@ const Navbar = () => {
         onMouseLeave={()=>setDropdownFlag(false)}
       >
         <TitleName>Not-Dixit!</TitleName>
-        {/* <MenuModal /> */}
         <Instructions flag={instructionsFlag} data-css='instructions' onMouseLeave={()=>setInstructionsFlag(false)}>
                 <InstructionsP>One player is the storyteller for the turn and looks at the images on the 7 cards in her hand. From one of these, she makes up a sentence and submits it.
                 Each other player selects the card in their hands which best matches the sentence.</InstructionsP>
@@ -135,11 +138,14 @@ const Navbar = () => {
                   onError={()=>setImgError(true)}/>
               : <Initials><p>{getInitial()}</p></Initials>}
           </>)
-          : (<>
+          : (signInWait 
+              ? (<LoadingSpinner small={true} data-css='spinner'/>)
+              : (
             <SignInBtn data-css='sign-out-btn'
-              onClick={()=>signInWithGoogle()}
+              onClick={()=>handleSignIn()}
             >Sign In</SignInBtn>
-          </>)}
+            ))
+          }
       </UserInfoBox>
       {userProfileModal && <UserProfile toggle={setUserProfileModal}/>}
       {newGameWarning && <NewGameWarning toggle={setNewGameWarning}/>}
@@ -152,7 +158,7 @@ export default Navbar;
 
 const EndOfGameMessage = styled.div`
   text-align: center;
-`
+`;
 
 const Wrapper = styled.div`
   height: 60px;
@@ -171,6 +177,7 @@ const Title = styled.div`
   z-index:0;
   position:relative;
 `;
+
 const TitleName = styled.div`
   color: lightgrey;
   width: fit-content;
@@ -180,10 +187,6 @@ const TitleName = styled.div`
   position:relative;
   padding: 13px 0;
 `;
-
-// const GameId = styled.div`
-//   padding-top:5px;
-// `;
 
 const GameInfo = styled.div`
   flex:1;

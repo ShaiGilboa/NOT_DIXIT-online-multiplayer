@@ -1,5 +1,4 @@
 import React, {
-  useEffect,
   useState,
 } from 'react';
 import {
@@ -19,7 +18,9 @@ import {
 import {
   validateGameIdType,
 } from '../../utils';
-
+import {
+  IP,
+} from '../../constants';
 
 import styled from 'styled-components';
 import UnstyledButton from '../UnstyledButton';
@@ -28,6 +29,7 @@ const JoinNewGameWarning = ({toggle}) => {
   const history = useHistory();
   const dispatch = useDispatch();
   const [newGameIdInput, setNewGameIdInput] = useState('')
+  const [errorMessage, setErrorMessage] = useState('');
 
   const currentUser = useSelector(state=>state.currentUser);
   const turnNumber = useSelector(state=>state.gameData.turnNumber)
@@ -41,7 +43,7 @@ const JoinNewGameWarning = ({toggle}) => {
         body: `join a new game with the Id: \n${gameId}`,
         photoURL: currentUser.info.photoURL,
       }
-      fetch('/send-message', {
+      fetch(`${IP}/send-message`, {
         method: 'PUT',
         headers: {
           "Content-Type": "application/json",
@@ -58,35 +60,39 @@ const JoinNewGameWarning = ({toggle}) => {
 const joinNewGameForReal = (event) => {
     event.preventDefault();
     const parsedGameId = parseInt(newGameIdInput);
-    if(!validateGameIdType(parsedGameId))
-    dispatch(changeCurrentUserStatus('joining-game'))
-    //TODO: convert Id to XXX-XXXX-XXX
-    const body = {
-      email: currentUser.info.email,
-      displayName: currentUser.info.displayName,
-      gameId: parsedGameId,
-      photoURL: currentUser.info.photoURL,
-      id: currentUser.info.id,
+    if(validateGameIdType(parsedGameId)){
+      dispatch(changeCurrentUserStatus('joining-game'))
+      //TODO: convert Id to XXX-XXXX-XXX
+      const body = {
+        email: currentUser.info.email,
+        displayName: currentUser.info.displayName,
+        gameId: parsedGameId,
+        photoURL: currentUser.info.photoURL,
+        id: currentUser.info.id,
+      }
+      fetch(`${IP}/join-existing-game`, {
+        method: 'POST',
+        headers: {
+              "Content-Type": "application/json",
+              "Accept" : "application/json"
+          },
+        body: JSON.stringify(body)
+      })
+      .then(res=>res.json())
+      .then(res=>{
+        if(res.status===200) {
+          dispatch(clearChat())
+          dispatch(setPlayerTurn(res.turnNumber))
+          waitingToStart(res.gameId, res.hand);
+        } else {
+            console.log('res.message',res.message);
+            dispatch(changeCurrentUserStatus('logged-in'))
+            setErrorMessage(res.message);
+          }
+      })
+    } else {
+      setErrorMessage('there is a problem with the game id, please try again')
     }
-    fetch('/join-existing-game', {
-      method: 'POST',
-      headers: {
-            "Content-Type": "application/json",
-            "Accept" : "application/json"
-        },
-      body: JSON.stringify(body)
-    })
-    .then(res=>res.json())
-    .then(res=>{
-      if(res.status===200) {
-        toggle(false);
-        dispatch(clearChat())
-        dispatch(setPlayerTurn(res.turnNumber))
-        waitingToStart(res.gameId, res.hand);
-      } else {
-          console.log('res.message',res.message)
-        }
-    })
   }
 
   return (
@@ -107,6 +113,7 @@ const joinNewGameForReal = (event) => {
         onChange={(event)=>setNewGameIdInput(event.target.value)}
       />
       </div>
+      {errorMessage.length > 0 && <ErrorMessage>{errorMessage}</ErrorMessage>}
     </Container>
     </Wrapper>
     );
@@ -122,7 +129,6 @@ const Wrapper = styled.div`
   z-index: 100;
   background-color: rgba(60,60,60,0.5);
   padding: 10px;
-  /* opacity: 0.5; */
 `;
 
 const Container = styled.form`
@@ -139,8 +145,6 @@ const Container = styled.form`
   flex-direction: column;
   justify-content: space-around;
   text-align: center;
-  /* object-fit:cover; */
-  /* opacity: 1; */
 `;
 
 const GameBtns = styled(UnstyledButton)`
@@ -157,6 +161,17 @@ const Input = styled.input`
   margin: 0 auto;
   width: 50%;
 `;
+
+const ErrorMessage = styled.p`
+  color: red;
+  width: 100%;
+  border-radius: 3px;
+  background-color: rgba(220,220,220,0.7);
+  width: 158px;
+  padding: 3px;
+  margin: 0 auto;
+`;
+
 const Label = styled.label`
   background-color: rgba(200,200,200,0.5);
   font-size: 20px;

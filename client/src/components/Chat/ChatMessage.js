@@ -1,5 +1,4 @@
 import React, {
-  useEffect,
   useState,
 } from 'react';
 import styled from 'styled-components';
@@ -53,7 +52,7 @@ const ReceivedMessage = ({message, photoURL, color, timestamp, displayName}) => 
 
 const ChatMessage = ({body, playerTurn, photoURL ,timestamp,displayName}) => {
 
-  const userInfo = useSelector(state => state.currentUser.info)
+  // const userInfo = useSelector(state => state.currentUser.info)
   const gameData = useSelector(state => state.gameData)
   return (<>
     {playerTurn === gameData.turnNumber
@@ -64,10 +63,6 @@ const ChatMessage = ({body, playerTurn, photoURL ,timestamp,displayName}) => {
 }
 
 export default ChatMessage;
-
-const Wrapper = styled.div`
-
-`;
 
 const ReceivedWrapper = styled.div`
   width: 100%;

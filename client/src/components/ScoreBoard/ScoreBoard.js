@@ -1,7 +1,4 @@
-import React, {
-  useEffect,
-  useState,
-} from 'react';
+import React from 'react';
 import styled from 'styled-components';
 
 import{
@@ -39,7 +36,6 @@ const Wrapper = styled.div`
   left:28%;
   width:45.5%;
   height:46%;
-  /* background-color:rgba(0,0,0,0.4); */
   box-shadow:  0 0 5px 4px #282a2d , inset 0 0 5px 4px #282a2d;
   display: flex;
   flex-direction: column;

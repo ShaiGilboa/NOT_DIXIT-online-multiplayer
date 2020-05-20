@@ -1,7 +1,4 @@
-import React, {
-  useEffect,
-  useState,
-} from 'react';
+import React from 'react';
 import {
   useSelector,
   useDispatch,
@@ -15,7 +12,9 @@ import {
   newGameId,
   setPlayerTurn,
 } from '../../Redux/actions'
-
+import {
+  IP,
+} from '../../constants';
 import styled from 'styled-components';
 import UnstyledButton from '../UnstyledButton';
 
@@ -34,7 +33,7 @@ const NewGameWarning = ({toggle}) => {
         body: `I'm starting a new game, join me with the Id: ${gameId}`,
         photoURL: currentUser.info.photoURL,
       }
-      fetch('/send-message', {
+      fetch(`${IP}/send-message`, {
         method: 'PUT',
         headers: {
           "Content-Type": "application/json",
@@ -58,7 +57,7 @@ const NewGameWarning = ({toggle}) => {
       photoURL: currentUser.info.photoURL,
       id: currentUser.info.id,
     }
-    fetch('/create-new-game', {
+    fetch(`${IP}/create-new-game`, {
       method: 'POST',
       headers: {
             "Content-Type": "application/json",

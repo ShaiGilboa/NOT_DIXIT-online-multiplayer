@@ -271,6 +271,7 @@ const getSubmissionArrHandler = async (req, res) => {
 // patch: {gameId} req.body
 const startGameHandler = async (req, res) => {
   const {gameId} = req.body;
+  console.log('gameId',gameId)
   try {
     await startGame(gameId, 'playing')
     //clear chat

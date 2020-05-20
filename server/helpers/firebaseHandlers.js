@@ -125,11 +125,14 @@ const signInHandler = async (req, res) => {
 // removes the 'currentGame' from the useNode, and added the game to the 'past games' node.
 const gameOverHandle = async (userId, gameId) => {
   // push the last game to 'pastGames'
-  db.ref('currentGames/' + gameId).once('value', currentGameSnapshot => { // changed .on to .once
-    if(!(db.ref(`appUsers/${userId}/pastGames/${gameId}`)).once('value').val()){
-      db.ref('appUsers/'+userId+'/pastGames').update({
-        [gameId]:{...currentGameSnapshot.val(), playerStatus: 'loser'},
-      })
+  db.ref('currentGames/' + gameId).once('value', async currentGameSnapshot => { 
+    const pastGamesSnapshot = await db.ref(`appUsers/${userId}/pastGames/${gameId}`).once('value')
+    if(pastGamesSnapshot){
+      if(!(pastGamesSnapshot.val())){
+        db.ref('appUsers/'+userId+'/pastGames').update({
+          [gameId]:{...currentGameSnapshot.val(), playerStatus: 'loser'},
+        })
+      }
     }
   })
   // removing the 'currentGame'
@@ -380,7 +383,6 @@ const startGame = async (gameId, newStatus) => {
 const changeActivePlayer = async (gameId) => {
   try {
     const currentActivePlayerRef = await db.ref(`currentGames/${gameId}/round/activePlayer`).once('value')
-    // console.log('currentActivePlayerRef',currentActivePlayerRef)
     const currentActivePlayer = currentActivePlayerRef.val();
     db.ref(`currentGames/${gameId}/players`).once('value', playersSnapshot => {
       let newActivePlayer = 0;

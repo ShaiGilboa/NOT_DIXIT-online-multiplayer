@@ -1,8 +1,5 @@
-import React, {
-  useEffect,
-  useState,
-} from 'react';
-import styled, {keyframes} from 'styled-components';
+import React from 'react';
+import styled from 'styled-components';
 
 import {
   CARD_IN_HAND_WIDTH,
@@ -29,16 +26,6 @@ const CardToVoteOn = ({
 
 export default CardToVoteOn;
 
-// const zoom = keyframes`
-//   from {
-//     transform: translateY(0) scale(1);
-//   }
-//   to {
-//     transform: translateY(60px) scale(2.7);
-//     z-index: 10;
-//   }
-// `;
-
 const CardWrapper = styled.img`
   border-radius: 10px;
   border: 1px solid grey;
@@ -52,10 +39,4 @@ const CardWrapper = styled.img`
   &:hover {
     cursor:pointer;
   }
-`;
-    // /* animation: ${zoom} 500ms ease-in forwards; */
-
-const CardImg = styled.div`
-  /* position: relative;
-  left: -50px; */
 `;

@@ -2,8 +2,12 @@ import React from 'react';
 import styled, { keyframes } from 'styled-components';
 import Loading from '../../assets/Dixit.png';
 
-const LoadingSpinner = () => {
-    return (
+const LoadingSpinner = ({small}) => {
+    return small
+    ? (<RotatingDiv>
+        <LogoSmall src={Loading} alt='loading-spinner' />
+      </RotatingDiv>)
+    : (
       <RotatingDiv>
         <Logo src={Loading} alt='loading-spinner' />
       </RotatingDiv>
@@ -33,4 +37,9 @@ const RotatingDiv = styled.div`
   margin: auto;
   transform: origin(0%);
   animation: ${rotation} 1500ms infinite linear;
+`;
+
+const LogoSmall = styled(Logo)`
+  width:60px;
+  height:35px;
 `;

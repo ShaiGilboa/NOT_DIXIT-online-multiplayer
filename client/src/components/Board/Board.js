@@ -15,8 +15,6 @@ import {
 } from 'react-redux'
 
 import {
-  CARD_IN_HAND_WIDTH,
-  CARD_IN_HAND_HEIGHT,
   PLAYER_COLORS_FILTERS,
   PLAYER_COLORS,
 } from '../../constants';
@@ -49,9 +47,11 @@ const Board = () => {
       const votingMessageRef = firebase.database().ref(`currentGames/${gameData.gameId}/round/votingMessage`)
         votingMessageRef.off()
     }
+    // eslint-disable-next-line
   },[gameData.status])
+
   // makes sure that any change in the player pieces is just in case
-  // of acore or amount change
+  // of score or amount change
   useEffect(()=>{
     if(players.length!==playersScores.length){
       setPlayersScores(extractRelevantChanges(players))
@@ -67,6 +67,7 @@ const Board = () => {
         setPlayersScores(extractRelevantChanges(players))
         }
     }
+    // eslint-disable-next-line
   },[players])
 
   useEffect(()=>{

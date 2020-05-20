@@ -11,21 +11,20 @@ import {
 } from 'react-redux';
 
 import {
-  firebaseApp,
   firebaseAppAuth,
   providers,
-  firebaseDB,
 } from '../../firebase';
-
 
 import {
   userSignIn,
   userSignOut,
   gameSignOut,
 } from '../../Redux/actions';
+import {
+  IP,
+} from '../../constants';
 
 export const AuthContext = createContext(null);
-
 
 const AuthProvider = ({
   children,
@@ -35,6 +34,7 @@ const AuthProvider = ({
 }) => {
 
   const [appUser, setAppUser] = useState({})
+  const [signInWait, setSignInWait]= useState(false);
 
   const dispatch = useDispatch();
   const currentUser = useSelector(state=>state.currentUser);
@@ -44,7 +44,7 @@ const AuthProvider = ({
     const body = {
       email: currentUser.info.email,
     }
-    fetch('/sign-out', {
+    fetch(`${IP}/sign-out`, {
       method: 'PUT',
       headers: {
           'Content-Type': 'application/json',
@@ -62,7 +62,7 @@ const AuthProvider = ({
 
   useEffect(() => {
     if (user){
-      fetch(`/sign-in`, {
+      fetch(`${IP}/sign-in`, {
         method: "POST",
         headers: {
           'Content-Type': 'application/json',
@@ -75,16 +75,24 @@ const AuthProvider = ({
       })
         .then(res => res.json())
         .then(json => {
+          setSignInWait(false)
           setAppUser(json.data);
           dispatch(userSignIn(json.data));
         })
     }
+    // eslint-disable-next-line
   }, [user]);
+
+  const handleSignIn = () => {
+    setSignInWait(true)
+    signInWithGoogle();
+  }
 
   return (
     <AuthContext.Provider value={{
-      signInWithGoogle,
+      handleSignIn,
       handleSignOut,
+      signInWait,
       }}>
       {children}
     </AuthContext.Provider>

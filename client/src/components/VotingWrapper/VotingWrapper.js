@@ -1,7 +1,4 @@
-import React, {
-  useEffect,
-  useState,
-} from 'react';
+import React from 'react';
 import styled, {keyframes} from 'styled-components';
 
 import CardToVoteOn from '../CardToVoteOn';
@@ -63,6 +60,7 @@ const Section = styled.div`
   display: flex;
   flex-direction:column;
   position:relative;
+  height: fit-content;
   &:hover{
     animation: ${zoom} 500ms ease-in forwards;
   }
