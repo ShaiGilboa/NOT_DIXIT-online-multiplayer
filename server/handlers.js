@@ -162,9 +162,7 @@ const scoringHandler = async (req, res) => {
     const players = playersSnapshot.val()
     const cardIds = Object.keys(cardsInPlay)
     cardIds.forEach(id=>cardsInPlay[id].imgSrc=''+id)
-    // const cards = cards64.map(card64 => card64.imgSrc=''+card64.id)
     const cards = Object.values(cardsInPlay)
-    // console.log('cards',cards)
     const titledCard = cards.find(card=>card.status==='titledCard')
     const submissions = cards.filter(card=>card.status!=='titledCard')
     const votingMessage = []
@@ -196,7 +194,6 @@ const scoringHandler = async (req, res) => {
       onePointPerGuess(submissions, players, votingMessage)
     }
     players.forEach(player=>player.status = 'scores')
-    console.log('players post',players)
     players.forEach(player=>{if(player.score>=30) {
       winnersMessage.push(`${player.displayName} is a winner! with ${player.score} points`)
       if(player.score>winningAmount){
