@@ -55,7 +55,7 @@ const getNewHand = async (gameRef) => {
 const admin = require('firebase-admin');
 
 require('dotenv').config();
-
+console.log("process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n')",process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n'))
 admin.initializeApp({
   credential: admin.credential.cert({
     type: 'service_account',
